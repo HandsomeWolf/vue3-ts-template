@@ -14,6 +14,9 @@ export * from './storage'
 // 导出验证相关工具函数
 export * from './validator'
 
+// 导出Excel相关工具函数
+export * from './excel'
+
 /**
  * 防抖函数
  * @param fn 需要防抖的函数

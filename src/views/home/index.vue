@@ -9,7 +9,8 @@ import {
 import * as echarts from 'echarts'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref, nextTick } from 'vue'
-import * as XLSX from 'xlsx'
+import { exportToExcel } from '@/utils'
+import { downloadChartAsImage } from '@/utils/echarts'
 
 // 图表实例
 let usaChart: echarts.ECharts | null = null
@@ -312,40 +313,32 @@ function handlePolicyAndPilotProjectsTableDataMoreClick(row: any) {
 // 下载表格数据
 function downloadPolicyAndPilotProjectsData() {
   try {
+    // 创建映射对象
+    const fieldMapping: Record<string, string> = {
+      name: 'Methane Mitigation/Utilization Amount',
+      description: 'Project Description',
+      agencies: 'Implementing Agencies',
+      link: 'Link'
+    }
+    
+    // 为address字段创建多个映射
+    const repeatedFields = [
+      'Jurisdiction', 'Specific Location', 'Latitude', 'Longitude', 'Country', 'Continent',
+      'Sector', 'Focus', 'Goal', 'Government Partners', 'Start Time',
+      'End Time', 'Project Status', 'Federal/Central', 'State/Province',
+      'Local', 'Private', 'Other', 'Funding Appropriation Status',
+      'Funding Sources as Listed', 'Cost', 'Funding Gap', 'Metrics', 'Notes'
+    ]
+    
     // 准备导出数据
     const exportData = policyAndPilotProjectsTableData.value.map(item => {
-      // 创建一个带索引签名的对象，解决TypeScript错误
-      const exportItem: { [key: string]: any } = {}
+      // 创建一个导出对象
+      const exportItem: Record<string, any> = {}
       
-      // 遍历表格中所有列，将数据添加到导出对象
-      if (item.address) exportItem['Jurisdiction'] = item.address
-      if (item.address) exportItem['Specific Location'] = item.address
-      if (item.address) exportItem['Latitude'] = item.address
-      if (item.address) exportItem['Longitude'] = item.address
-      if (item.address) exportItem['Country'] = item.address
-      if (item.address) exportItem['Continent'] = item.address
-      if (item.address) exportItem['Sector'] = item.address
-      if (item.address) exportItem['Focus'] = item.address
-      if (item.address) exportItem['Goal'] = item.address
+      // 添加基本字段
       if (item.name) exportItem['Methane Mitigation/Utilization Amount'] = item.name
-      if (item.address) exportItem['Government Partners'] = item.address
-      if (item.address) exportItem['Start Time'] = item.address
-      if (item.address) exportItem['End Time'] = item.address
-      if (item.address) exportItem['Project Status'] = item.address
-      if (item.address) exportItem['Federal/Central'] = item.address
-      if (item.address) exportItem['State/Province'] = item.address
-      if (item.address) exportItem['Local'] = item.address
-      if (item.address) exportItem['Private'] = item.address
-      if (item.address) exportItem['Other'] = item.address
-      if (item.address) exportItem['Funding Appropriation Status'] = item.address
-      if (item.address) exportItem['Funding Sources as Listed'] = item.address
-      if (item.address) exportItem['Cost'] = item.address
-      if (item.address) exportItem['Funding Gap'] = item.address
-      if (item.address) exportItem['Metrics'] = item.address
-      if (item.address) exportItem['Notes'] = item.address
       
-      // 添加当前未显示在表格中但在详情弹窗中显示的字段
-      // 使用类型断言解决TypeScript错误
+      // 针对详情字段进行处理
       const rowWithDetails = item as { 
         name: string; 
         address: string; 
@@ -358,25 +351,18 @@ function downloadPolicyAndPilotProjectsData() {
       if (rowWithDetails.agencies) exportItem['Implementing Agencies'] = rowWithDetails.agencies
       if (rowWithDetails.link) exportItem['Link'] = rowWithDetails.link
       
+      // 对address字段进行多重映射
+      if (item.address) {
+        repeatedFields.forEach(field => {
+          exportItem[field] = item.address
+        })
+      }
+      
       return exportItem
     })
     
-    // 创建工作簿
-    const wb = XLSX.utils.book_new()
-    
-    // 创建工作表
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    
-    // 将工作表添加到工作簿
-    XLSX.utils.book_append_sheet(wb, ws, 'Policies and Projects')
-    
-    // 生成Excel文件并下载
-    XLSX.writeFile(wb, `policies-and-projects-${new Date().getTime()}.xlsx`)
-    
-    ElMessage({
-      type: 'success',
-      message: 'Data exported successfully',
-    })
+    // 导出到Excel
+    exportToExcel(exportData, 'policies-and-projects', 'Policies and Projects')
   } catch (error: any) {
     console.error('Export failed:', error)
     ElMessage.error(`Export failed: ${error.message}`)
@@ -818,22 +804,8 @@ function initLineChart() {
 }
 
 function downloadChart() {
-  // 获取图表实例并下载
   if (lineChartRef.value && lineChartRef.value.chart) {
-    const chartInstance = lineChartRef.value.chart
-    const url = chartInstance.getDataURL({
-      type: 'png',
-      pixelRatio: 2,
-      backgroundColor: '#fcdddf',
-    })
-
-    // 创建一个临时链接元素来下载图片
-    const link = document.createElement('a')
-    link.download = `methane-emissions-${new Date().getTime()}.png`
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    downloadChartAsImage(lineChartRef.value.chart, 'methane-emissions', '#fcdddf')
   }
   else {
     ElMessage.warning('无法获取图表实例')
@@ -944,22 +916,8 @@ function initPieChart() {
 
 // 下载饼图
 function downloadPieChart() {
-  // 获取图表实例并下载
   if (pieChartRef.value && pieChartRef.value.chart) {
-    const chartInstance = pieChartRef.value.chart
-    const url = chartInstance.getDataURL({
-      type: 'png',
-      pixelRatio: 2,
-      backgroundColor: '#fcdddf'
-    })
-    
-    // 创建一个临时链接元素来下载图片
-    const link = document.createElement('a')
-    link.download = `methane-emissions-by-sector-${new Date().getTime()}.png`
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    downloadChartAsImage(pieChartRef.value.chart, 'methane-emissions-by-sector', '#fcdddf')
   } else {
     ElMessage.warning('无法获取图表实例')
   }

@@ -129,151 +129,6 @@ const policyScoreData = [
   { name: 'Wyoming', value: 2 },
 ]
 
-// 模拟政策全面性数据
-const policyComprehensiveData = {
-  'California': {
-    石油和天然气: ['确定排放源与计算排放量', '设置量化目标', '实施激励措施或法规'],
-    煤炭: ['实施激励措施或法规', '定期评估与完善'],
-    废弃物: ['确定排放源与计算排放量', '设置量化目标'],
-    农业: ['利益相关方参与', '设置量化目标', '实施激励措施或法规'],
-  },
-  'Texas': {
-    石油和天然气: ['确定排放源与计算排放量', '制定排放预测'],
-    煤炭: ['确定排放源与计算排放量'],
-    废弃物: ['制定排放预测'],
-    农业: ['确定排放源与计算排放量'],
-  },
-  'New York': {
-    石油和天然气: ['确定排放源与计算排放量', '设置量化目标', '实施激励措施或法规', '定期评估与完善'],
-    煤炭: ['设置量化目标', '实施激励措施或法规', '定期评估与完善'],
-    废弃物: ['确定排放源与计算排放量', '设置量化目标', '利益相关方参与'],
-    农业: ['设置量化目标', '实施激励措施或法规', '利益相关方参与'],
-  },
-  'Colorado': {
-    石油和天然气: ['确定排放源与计算排放量', '设置量化目标', '实施激励措施或法规'],
-    煤炭: ['确定排放源与计算排放量', '制定排放预测'],
-    废弃物: ['制定排放预测', '设置量化目标'],
-    农业: ['确定排放源与计算排放量', '利益相关方参与'],
-  },
-}
-
-// 模拟排放趋势数据（2018-2022）
-const emissionsTrendData = {
-  'California': {
-    biomass: [1200, 1180, 1150, 1100, 1050],
-    coal: [800, 750, 700, 650, 600],
-    fossil: [2000, 1900, 1850, 1800, 1750],
-    landfill: [1500, 1450, 1400, 1350, 1300],
-    livestock: [3000, 2900, 2850, 2800, 2750],
-    oil_gas: [4000, 3900, 3850, 3800, 3750],
-    rice: [500, 480, 460, 440, 420],
-    wastewater: [1000, 950, 900, 850, 800],
-  },
-  'Texas': {
-    biomass: [800, 820, 850, 870, 900],
-    coal: [2500, 2400, 2300, 2200, 2100],
-    fossil: [3500, 3600, 3650, 3700, 3800],
-    landfill: [2000, 2050, 2100, 2150, 2200],
-    livestock: [4500, 4600, 4650, 4700, 4800],
-    oil_gas: [8000, 8200, 8400, 8600, 8800],
-    rice: [300, 310, 320, 330, 340],
-    wastewater: [1500, 1550, 1600, 1650, 1700],
-  },
-  'New York': {
-    biomass: [600, 580, 560, 540, 520],
-    coal: [400, 350, 300, 250, 200],
-    fossil: [1500, 1450, 1400, 1350, 1300],
-    landfill: [1200, 1150, 1100, 1050, 1000],
-    livestock: [800, 780, 760, 740, 720],
-    oil_gas: [1000, 950, 900, 850, 800],
-    rice: [50, 45, 40, 35, 30],
-    wastewater: [700, 680, 660, 640, 620],
-  },
-  'Colorado': {
-    biomass: [400, 410, 420, 430, 440],
-    coal: [1200, 1150, 1100, 1050, 1000],
-    fossil: [1800, 1750, 1700, 1650, 1600],
-    landfill: [900, 920, 940, 960, 980],
-    livestock: [1500, 1520, 1540, 1560, 1580],
-    oil_gas: [2500, 2400, 2300, 2200, 2100],
-    rice: [100, 95, 90, 85, 80],
-    wastewater: [600, 610, 620, 630, 640],
-  },
-}
-
-// 模拟政策数据
-const policyData = {
-  'California': [
-    {
-      jurisdiction: 'California',
-      year: 2016,
-      sector: 'Oil & Gas, Coal, Municipal Solid Waste, Wastewater, Rice, Manure, Enteric Fermentation',
-      policyName: 'California Senate Bill 1383 Short-Lived Climate Pollutants',
-      type: 'Plan and Strategy',
-      targets: [
-        'Methane will be reduced to 40% below 2013 levels by 2030',
-        'Reduce the amount of organic waste sent to landfills by 75% below 2014 levels by 2025',
-        'Achieve recovery of at least 20% of food waste by 2025',
-        'Reduce dairy and livestock sector methane emissions of 40% below 2013 levels by 2030',
-      ],
-    },
-    {
-      jurisdiction: 'California',
-      year: 2019,
-      sector: 'Oil & Gas',
-      policyName: 'Oil and Gas Methane Regulation',
-      type: 'Regulation',
-      targets: ['Reduce methane emissions from oil and gas operations by 45% by 2025'],
-    },
-  ],
-  'Texas': [
-    {
-      jurisdiction: 'Texas',
-      year: 2020,
-      sector: 'Oil & Gas',
-      policyName: 'Texas Methane Monitoring Program',
-      type: 'Monitoring',
-      targets: null,
-    },
-  ],
-  'New York': [
-    {
-      jurisdiction: 'New York',
-      year: 2019,
-      sector: 'All Sectors',
-      policyName: 'Climate Leadership and Community Protection Act',
-      type: 'Legislation',
-      targets: ['Reduce greenhouse gas emissions by 85% by 2050'],
-    },
-    {
-      jurisdiction: 'New York',
-      year: 2021,
-      sector: 'Waste Management',
-      policyName: 'Food Waste Recycling Law',
-      type: 'Regulation',
-      targets: ['Divert food waste from landfills for businesses generating more than 2 tons per week'],
-    },
-  ],
-  'Colorado': [
-    {
-      jurisdiction: 'Colorado',
-      year: 2020,
-      sector: 'Oil & Gas',
-      policyName: '2 Colorado Code Regs. §404-1',
-      type: 'Regulation',
-      targets: null,
-    },
-    {
-      jurisdiction: 'Colorado',
-      year: 2021,
-      sector: 'Multiple Sectors',
-      policyName: 'Greenhouse Gas Pollution Reduction Roadmap',
-      type: 'Plan and Strategy',
-      targets: ['Reduce greenhouse gas emissions by 26% by 2025', '50% by 2030', '90% by 2050'],
-    },
-  ],
-}
-
 // 中国省份甲烷排放量模拟数据（单位：thousand tons）
 const chinaEmissionsData = [
   { name: '北京市', value: 3200 },
@@ -349,110 +204,6 @@ const chinaPolicyScoreData = [
   { name: '香港特别行政区', value: 0 },
   { name: '澳门特别行政区', value: 0 },
 ]
-
-// 中国省份排放趋势数据（2018-2022）
-const chinaEmissionsTrendData = {
-  北京: {
-    biomass: [300, 290, 280, 270, 260],
-    coal: [500, 480, 460, 440, 420],
-    fossil: [800, 780, 760, 740, 720],
-    landfill: [400, 390, 380, 370, 360],
-    livestock: [200, 195, 190, 185, 180],
-    oil_gas: [600, 580, 560, 540, 520],
-    rice: [100, 98, 96, 94, 92],
-    wastewater: [300, 290, 280, 270, 260],
-  },
-  上海: {
-    biomass: [250, 245, 240, 235, 230],
-    coal: [600, 580, 560, 540, 520],
-    fossil: [1200, 1180, 1160, 1140, 1120],
-    landfill: [800, 780, 760, 740, 720],
-    livestock: [150, 145, 140, 135, 130],
-    oil_gas: [700, 680, 660, 640, 620],
-    rice: [120, 118, 116, 114, 112],
-    wastewater: [400, 390, 380, 370, 360],
-  },
-  广东: {
-    biomass: [700, 690, 680, 670, 660],
-    coal: [2000, 1950, 1900, 1850, 1800],
-    fossil: [3500, 3450, 3400, 3350, 3300],
-    landfill: [2500, 2450, 2400, 2350, 2300],
-    livestock: [1500, 1480, 1460, 1440, 1420],
-    oil_gas: [4000, 3950, 3900, 3850, 3800],
-    rice: [2800, 2780, 2760, 2740, 2720],
-    wastewater: [3000, 2950, 2900, 2850, 2800],
-  },
-  四川: {
-    biomass: [900, 910, 920, 930, 940],
-    coal: [1800, 1780, 1760, 1740, 1720],
-    fossil: [2000, 1980, 1960, 1940, 1920],
-    landfill: [1500, 1480, 1460, 1440, 1420],
-    livestock: [3500, 3520, 3540, 3560, 3580],
-    oil_gas: [2000, 1980, 1960, 1940, 1920],
-    rice: [2500, 2520, 2540, 2560, 2580],
-    wastewater: [1800, 1780, 1760, 1740, 1720],
-  },
-}
-
-// 中国省份政策数据
-const chinaPolicyData = {
-  北京: [
-    {
-      jurisdiction: '北京',
-      year: 2018,
-      sector: '多行业',
-      policyName: '北京市打赢蓝天保卫战三年行动计划',
-      type: '行动计划',
-      targets: ['到2020年，全市PM2.5年均浓度比2015年下降30%以上'],
-    },
-    {
-      jurisdiction: '北京',
-      year: 2021,
-      sector: '能源',
-      policyName: '北京市能源消费总量和强度双控行动方案',
-      type: '行动方案',
-      targets: ['到2025年，非化石能源占一次能源消费比重达到14%左右'],
-    },
-  ],
-  上海: [
-    {
-      jurisdiction: '上海',
-      year: 2020,
-      sector: '多行业',
-      policyName: '上海市碳达峰实施方案',
-      type: '实施方案',
-      targets: ['力争2025年前实现碳达峰'],
-    },
-  ],
-  广东: [
-    {
-      jurisdiction: '广东',
-      year: 2019,
-      sector: '工业、能源',
-      policyName: '广东省绿色低碳循环发展实施方案',
-      type: '实施方案',
-      targets: ['到2025年，单位GDP能耗比2020年下降14%左右'],
-    },
-    {
-      jurisdiction: '广东',
-      year: 2021,
-      sector: '交通',
-      policyName: '广东省推广清洁能源汽车实施方案',
-      type: '实施方案',
-      targets: ['到2025年，全省新能源汽车新车销量占比达到20%以上'],
-    },
-  ],
-  四川: [
-    {
-      jurisdiction: '四川',
-      year: 2020,
-      sector: '农业',
-      policyName: '四川省农业农村碳达峰碳中和实施方案',
-      type: '实施方案',
-      targets: ['到2025年，农业面源污染得到初步遏制，主要农作物化肥、农药利用率达到43%以上'],
-    },
-  ],
-}
 
 // 弹窗，开始{
 const mapInfoDialogVisible = ref(false)
@@ -684,7 +435,6 @@ const form = ref({
 })
 
 // 列表数据
-const tableData = ref([])
 const formInline = ref({
   user: '',
   region: '',
@@ -1305,7 +1055,7 @@ function initDetailMap(mapName: string, country: string) {
     // 注册地图
     if (mapJsonData && mapJsonData.features.length > 0) {
       try {
-        echarts.registerMap(mapName, mapJsonData);
+        echarts.registerMap(mapName, mapJsonData as any);
         
         // 创建地图配置
         const option = {

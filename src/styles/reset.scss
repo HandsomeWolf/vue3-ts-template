@@ -1,0 +1,74 @@
+ /* 重置所有元素的盒模型 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 重置 HTML 和 body */
+html,
+body {
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+
+/* 清除列表样式 */
+ul,
+ol {
+  list-style: none;
+}
+
+/* 清除链接样式 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 清除表单元素默认样式 */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  outline: none;
+  border: none;
+  background: transparent;
+}
+
+/* 清除表格边框间距 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* 清除图片多余的间隙 */
+img {
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+/* 清除 webkit 表单元素的默认样式 */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+/* 适配 Element Plus */
+:root {
+  --el-color-primary: #409eff;
+}
+
+/* 隐藏滚动条但保留功能 */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

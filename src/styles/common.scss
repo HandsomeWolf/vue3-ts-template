@@ -1,0 +1,30 @@
+// 文本省略
+.ellipsis {
+    @include ellipsis(1);
+  }
+  .ellipsis-2 {
+    @include ellipsis(2);
+  }
+  .ellipsis-3 {
+    @include ellipsis(3);
+  }
+
+// 弹性布局
+.flex {
+    display: flex;
+  }
+  .flex-column {
+    @include flex(column);
+  }
+  .flex-between {
+    @include flex(row, space-between);
+  }
+  .flex-center {
+    @include flex(row, center, center);
+  }
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+  .flex-grow {
+    flex-grow: 1;
+  }

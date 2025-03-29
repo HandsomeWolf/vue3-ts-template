@@ -2,8 +2,6 @@
 import chinaJson from '@/assets/GEOJSON/china.json'
 import usaJson from '@/assets/GEOJSON/USA.json'
 import {
-  DocumentCopy,
-  Download,
   Edit,
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
@@ -11,6 +9,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref, nextTick } from 'vue'
 import { exportToExcel } from '@/utils'
 import { downloadChartAsImage } from '@/utils/echarts'
+import { emissionsData, policyScoreData, chinaEmissionsData, chinaPolicyScoreData } from '@/mock'
+// 引入自定义图表组件
+import LineChart from '@/components/echarts/LineChart.vue'
+import PieChart from '@/components/echarts/PieChart.vue'
+import DownloadChartButton from '@/components/echarts/DownloadChartButton.vue'
+import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
+import { COLOR_SCHEMES } from '@/constants/echarts'
 
 // 图表实例
 let usaChart: echarts.ECharts | null = null
@@ -22,195 +27,17 @@ const lineChartRef = ref<any>(null)
 // 图表配置选项
 const usaMapOption = ref({})
 const chinaMapOption = ref({})
-const lineChartOption = ref({})
 
 // 饼图配置选项
-const pieChartOption = ref({})
 const pieChartRef = ref<any>(null)
 
-// 定义两种不同的颜色方案
-const colorSchemes = {
-  emissions: ['#ffedd5', '#fed7aa', '#fb923c', '#ea580c', '#9a3412'], // 橙色到红色
-  policy: ['#fef9c3', '#86efac', '#22c55e', '#15803d', '#0ea5e9'], // 黄色到绿色到蓝色
-}
-
-// 模拟数据 - 2022年各州甲烷排放量（单位：thousand tons）
-const emissionsData = [
-  { name: 'Texas', value: 35000 },
-  { name: 'California', value: 28000 },
-  { name: 'Louisiana', value: 25000 },
-  { name: 'Oklahoma', value: 22000 },
-  { name: 'Pennsylvania', value: 20000 },
-  { name: 'Ohio', value: 18000 },
-  { name: 'Illinois', value: 16000 },
-  { name: 'Florida', value: 15000 },
-  { name: 'Michigan', value: 14000 },
-  { name: 'New York', value: 13000 },
-  { name: 'Colorado', value: 12000 },
-  { name: 'Indiana', value: 11000 },
-  { name: 'North Dakota', value: 10000 },
-  { name: 'West Virginia', value: 9500 },
-  { name: 'Wyoming', value: 9000 },
-  { name: 'Kansas', value: 8500 },
-  { name: 'New Mexico', value: 8000 },
-  { name: 'Virginia', value: 7500 },
-  { name: 'Missouri', value: 7000 },
-  { name: 'Georgia', value: 6500 },
-  { name: 'Alabama', value: 6000 },
-  { name: 'Wisconsin', value: 5500 },
-  { name: 'Kentucky', value: 5000 },
-  { name: 'Iowa', value: 4500 },
-  { name: 'Arkansas', value: 4000 },
-  { name: 'Mississippi', value: 3500 },
-  { name: 'Oregon', value: 3000 },
-  { name: 'Utah', value: 2800 },
-  { name: 'Nevada', value: 2600 },
-  { name: 'Arizona', value: 2400 },
-  { name: 'Idaho', value: 2200 },
-  { name: 'Washington', value: 2000 },
-  { name: 'Nebraska', value: 1800 },
-  { name: 'South Carolina', value: 1600 },
-  { name: 'Tennessee', value: 1400 },
-  { name: 'Minnesota', value: 1200 },
-  { name: 'Montana', value: 1000 },
-  { name: 'Connecticut', value: 900 },
-  { name: 'Hawaii', value: 800 },
-  { name: 'Alaska', value: 700 },
-  { name: 'Maine', value: 600 },
-  { name: 'New Hampshire', value: 550 },
-  { name: 'Rhode Island', value: 500 },
-  { name: 'Delaware', value: 450 },
-  { name: 'South Dakota', value: 400 },
-  { name: 'Vermont', value: 350 },
-  { name: 'District of Columbia', value: 300 },
-]
-
-// 模拟数据 - 各州政策目标力度得分（0-100分）
-const policyScoreData = [
-  { name: 'California', value: 95 },
-  { name: 'New York', value: 90 },
-  { name: 'Massachusetts', value: 88 },
-  { name: 'Washington', value: 85 },
-  { name: 'Oregon', value: 83 },
-  { name: 'Vermont', value: 82 },
-  { name: 'Colorado', value: 80 },
-  { name: 'Hawaii', value: 78 },
-  { name: 'Maine', value: 77 },
-  { name: 'Rhode Island', value: 75 },
-  { name: 'Connecticut', value: 73 },
-  { name: 'New Jersey', value: 72 },
-  { name: 'Minnesota', value: 70 },
-  { name: 'Maryland', value: 68 },
-  { name: 'Illinois', value: 65 },
-  { name: 'Nevada', value: 63 },
-  { name: 'New Mexico', value: 60 },
-  { name: 'Michigan', value: 58 },
-  { name: 'Pennsylvania', value: 55 },
-  { name: 'Virginia', value: 53 },
-  { name: 'Delaware', value: 50 },
-  { name: 'North Carolina', value: 48 },
-  { name: 'Arizona', value: 45 },
-  { name: 'Florida', value: 43 },
-  { name: 'Wisconsin', value: 40 },
-  { name: 'Ohio', value: 38 },
-  { name: 'Iowa', value: 35 },
-  { name: 'Texas', value: 33 },
-  { name: 'Indiana', value: 30 },
-  { name: 'Missouri', value: 28 },
-  { name: 'Georgia', value: 25 },
-  { name: 'Kansas', value: 23 },
-  { name: 'Oklahoma', value: 20 },
-  { name: 'South Carolina', value: 18 },
-  { name: 'Tennessee', value: 15 },
-  { name: 'Kentucky', value: 13 },
-  { name: 'Louisiana', value: 10 },
-  { name: 'Alabama', value: 8 },
-  { name: 'Mississippi', value: 5 },
-  { name: 'West Virginia', value: 3 },
-  { name: 'Wyoming', value: 2 },
-]
-
-// 中国省份甲烷排放量模拟数据（单位：thousand tons）
-const chinaEmissionsData = [
-  { name: '北京市', value: 3200 },
-  { name: '天津市', value: 4500 },
-  { name: '河北省', value: 18000 },
-  { name: '山西省', value: 15000 },
-  { name: '内蒙古自治区', value: 12000 },
-  { name: '辽宁省', value: 10000 },
-  { name: '吉林省', value: 5500 },
-  { name: '黑龙江省', value: 7000 },
-  { name: '上海市', value: 4800 },
-  { name: '江苏省', value: 22000 },
-  { name: '浙江省', value: 15000 },
-  { name: '安徽省', value: 12000 },
-  { name: '福建省', value: 8500 },
-  { name: '江西省', value: 9000 },
-  { name: '山东省', value: 25000 },
-  { name: '河南省', value: 28000 },
-  { name: '湖北省', value: 14000 },
-  { name: '湖南省', value: 13000 },
-  { name: '广东省', value: 20000 },
-  { name: '广西壮族自治区', value: 9500 },
-  { name: '海南省', value: 2500 },
-  { name: '重庆市', value: 7500 },
-  { name: '四川省', value: 16000 },
-  { name: '贵州省', value: 8000 },
-  { name: '云南省', value: 9000 },
-  { name: '西藏自治区', value: 1000 },
-  { name: '陕西省', value: 11000 },
-  { name: '甘肃省', value: 6000 },
-  { name: '青海省', value: 2000 },
-  { name: '宁夏回族自治区', value: 3500 },
-  { name: '新疆维吾尔自治区', value: 8000 },
-  { name: '台湾省', value: 0 },
-  { name: '香港特别行政区', value: 0 },
-  { name: '澳门特别行政区', value: 0 },
-]
-
-// 中国省份政策目标力度模拟数据（0-100分）
-const chinaPolicyScoreData = [
-  { name: '北京市', value: 92 },
-  { name: '天津市', value: 85 },
-  { name: '河北省', value: 70 },
-  { name: '山西省', value: 55 },
-  { name: '内蒙古自治区', value: 45 },
-  { name: '辽宁省', value: 65 },
-  { name: '吉林省', value: 60 },
-  { name: '黑龙江省', value: 58 },
-  { name: '上海市', value: 90 },
-  { name: '江苏省', value: 80 },
-  { name: '浙江省', value: 85 },
-  { name: '安徽省', value: 65 },
-  { name: '福建省', value: 75 },
-  { name: '江西省', value: 60 },
-  { name: '山东省', value: 70 },
-  { name: '河南省', value: 62 },
-  { name: '湖北省', value: 68 },
-  { name: '湖南省', value: 65 },
-  { name: '广东省', value: 88 },
-  { name: '广西壮族自治区', value: 58 },
-  { name: '海南省', value: 70 },
-  { name: '重庆市', value: 75 },
-  { name: '四川省', value: 68 },
-  { name: '贵州省', value: 50 },
-  { name: '云南省', value: 55 },
-  { name: '西藏自治区', value: 30 },
-  { name: '陕西省', value: 62 },
-  { name: '甘肃省', value: 45 },
-  { name: '青海省', value: 40 },
-  { name: '宁夏回族自治区', value: 38 },
-  { name: '新疆维吾尔自治区', value: 35 },
-  { name: '台湾省', value: 0 },
-  { name: '香港特别行政区', value: 0 },
-  { name: '澳门特别行政区', value: 0 },
-]
-
 // 弹窗，开始{
+
+// 点击地图的弹窗
 const mapInfoDialogVisible = ref(false)
 const mapInfoDialogTitle = ref('')
 
-// 项目详情弹窗
+// 点击更多的弹窗
 const projectDetailDialogVisible = ref(false)
 const currentProjectDetail = ref<{ 
   name?: string; 
@@ -264,6 +91,17 @@ const methaneEmissionsOverTimeTableData = ref([
   },
 ])
 
+// select联动
+function handleTotalEmissionChange(value: string) {
+  if (value === 'emissionBySector') {
+    methaneEmissionsOverTimeForm.value.emissionBySector = ''
+  }
+}
+
+function handleMethaneEmissionsOverTimeSubmit() {
+  console.log('handleMethaneEmissionsOverTimeSubmit')
+}
+
 // 选项卡4
 const methaneEmissionsBySectorsTableData = ref([
   {
@@ -304,13 +142,26 @@ const policyAndPilotProjectsTableData = ref([
     address: 'No. 189, Grove St, Los Angeles',
   },
 ])
+// 搜索框
+const policiesAndPilotProjectsForm = ref({
+  user: '',
+  region: '',
+  date: '',
+  policy: '',
+})
+
+function handlePoliciesAndPilotProjectsSubmit() {
+  console.log('handlePoliciesAndPilotProjectsSubmit')
+}
+
+// 更多按钮点击事件
 function handlePolicyAndPilotProjectsTableDataMoreClick(row: any) {
   console.warn('点击行:', row)
   currentProjectDetail.value = row
   projectDetailDialogVisible.value = true
 }
 
-// 下载表格数据
+// 下载表格数据TODO:
 function downloadPolicyAndPilotProjectsData() {
   try {
     // 创建映射对象
@@ -369,586 +220,11 @@ function downloadPolicyAndPilotProjectsData() {
   }
 }
 
-function handleTotalEmissionChange(value: string) {
-  if (value === 'emissionBySector') {
-    methaneEmissionsOverTimeForm.value.emissionBySector = ''
-  }
-}
-
-// 弹窗，结束}
-
-// 反馈表单弹窗，开始{
-const feedbackFormDialogVisible = ref(false)
-// 反馈表单弹窗，结束}
-const value = ref('')
-
-// 定义地区地图和坐标点数据
+// 选项卡6
 const detailMapRef = ref<any>(null)
-const detailMapOption = ref({})
-const currentDetailMapName = ref('')
-const projectPoints = ref<any[]>([])
+    const detailMapOption = ref({})
 
-// 模拟项目点位信息（实际项目中应从API获取）
-const usaProjectPoints = [
-  { name: 'California Solar Project', longitude: -119.4179, latitude: 36.7783, description: '太阳能发电项目，减少甲烷排放', value: 35 },
-  { name: 'California Wind Project', longitude: -121.4944, latitude: 38.5816, description: '风能发电项目，替代化石燃料', value: 28 },
-  { name: 'Texas Wind Farm', longitude: -99.9018, latitude: 31.9686, description: '风能发电场，减少化石燃料使用', value: 42 },
-  { name: 'Texas Oil Capture', longitude: -97.7431, latitude: 30.2672, description: '石油开采甲烷捕获项目', value: 38 },
-  { name: 'New York Waste Management', longitude: -73.9352, latitude: 40.7306, description: '垃圾处理项目，减少填埋场甲烷排放', value: 28 },
-  { name: 'New York Landfill Gas', longitude: -74.0060, latitude: 40.7128, description: '填埋场气体收集与利用', value: 25 },
-  { name: 'Colorado Natural Gas Capture', longitude: -105.7821, latitude: 39.5501, description: '天然气捕获项目', value: 23 },
-  { name: 'Colorado Methane Reduction', longitude: -104.9903, latitude: 39.7392, description: '甲烷减排综合项目', value: 19 },
-]
-
-const chinaProjectPoints = [
-  { name: '北京市生物质能源项目', longitude: 116.4074, latitude: 39.9042, description: '生物质能源转换项目', value: 25 },
-  { name: '北京市垃圾填埋气回收', longitude: 116.2363, latitude: 39.8343, description: '垃圾填埋场甲烷回收利用', value: 22 },
-  { name: '四川省沼气利用工程', longitude: 104.0665, latitude: 30.6598, description: '农村沼气利用减排项目', value: 38 },
-  { name: '四川省畜牧业减排', longitude: 103.7558, latitude: 29.6136, description: '畜牧业甲烷减排项目', value: 33 },
-  { name: '上海市垃圾分类处理', longitude: 121.4737, latitude: 31.2304, description: '城市垃圾分类与甲烷回收', value: 31 },
-  { name: '上海市工业废水处理', longitude: 121.5574, latitude: 31.0449, description: '工业废水处理减少甲烷排放', value: 27 },
-  { name: '广东省畜牧业减排项目', longitude: 113.2644, latitude: 23.1291, description: '畜牧业甲烷捕获与利用', value: 29 },
-  { name: '广东省天然气利用项目', longitude: 114.0579, latitude: 22.5431, description: '天然气替代煤炭清洁能源项目', value: 32 },
-]
-
-// 表单数据
-const form = ref({
-  name: '',
-  email: '',
-  region: '',
-  message: '',
-  captcha: '',
-})
-
-// 列表数据
-const formInline = ref({
-  user: '',
-  region: '',
-  date: '',
-  policy: '',
-})
-
-function onSubmit() {
-  console.warn('提交表单')
-}
-
-// 显示州或省份详情
-function showStateDetails(name: string, country: string) {
-  mapInfoDialogTitle.value = `${name}`
-  mapInfoDialogVisible.value = true
-
-  // 根据不同国家和地区加载对应数据
-  if (country === 'usa') {
-    // 加载美国数据
-  }
-  else if (country === 'china') {
-    // 加载中国数据
-  }
-  
-  // 初始化详细地图
-  initDetailMap(name, country)
-}
-
-function initMap() {
-  // 创建图表实例
-  usaChart = echarts.init(document.getElementById('usa-map'))
-  chinaChart = echarts.init(document.getElementById('china-map'))
-
-  updateChinaMap()
-  updateUSAMap()
-}
-
-// 地图切换数据
-function handleUpdateMapChange(value?: string) {
-  updateUSAMap(value)
-  updateChinaMap(value)
-}
-
-// 美国地图更新函数
-function updateUSAMap(value?: string) {
-  // 使用类型断言转换为echarts所需的GeoJSON格式
-  const convertedUSAJson = {
-    type: 'FeatureCollection' as const,
-    features: usaJson.features,
-  }
-
-  echarts.registerMap('USA', convertedUSAJson as any, {
-    'Alaska': {
-      left: -131,
-      top: 25,
-      width: 15,
-    },
-    'Hawaii': {
-      left: -110,
-      top: 28,
-      width: 5,
-    },
-    'Puerto Rico': {
-      left: -76,
-      top: 26,
-      width: 2,
-    },
-  })
-
-  let title: string
-  let colorScheme: string[]
-  let dataRange: number[]
-  let mapData: any[] = []
-
-  if (value === '1') {
-    title = 'Total methane emissions by state in 2022'
-    colorScheme = colorSchemes.emissions
-    dataRange = [300, 35000]
-    mapData = emissionsData
-  }
-  else if (value === '2') {
-    title = 'Strength of policy objectives scores for each state'
-    colorScheme = colorSchemes.policy
-    dataRange = [0, 100]
-    mapData = policyScoreData
-  }
-  else {
-    title = 'USA'
-    colorScheme = ['#e0e0e0']
-    dataRange = [0, 100]
-    mapData = []
-  }
-
-  const option = {
-    title: {
-      text: title,
-      left: 'center',
-    },
-    tooltip: {
-      trigger: 'item',
-      showDelay: 0,
-      transitionDuration: 0.2,
-      formatter(params: any) {
-        if (!params.value)
-          return `${params.name}: No data yet`
-        return `${params.name}: ${params.value}${value === '1' ? ' thousand tons' : ' point'}`
-      },
-    },
-    visualMap: {
-      left: 'right',
-      min: dataRange[0],
-      max: dataRange[1],
-      inRange: {
-        color: colorScheme,
-      },
-      text: ['高', '低'],
-      calculable: true,
-      show: value !== '0',
-    },
-    toolbox: {
-      show: true,
-      left: 'left',
-      top: 'top',
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {},
-      },
-    },
-    series: [
-      {
-        name: '数据',
-        type: 'map',
-        roam: true,
-        map: 'USA',
-        emphasis: {
-          label: {
-            show: true,
-          },
-        },
-        select: {
-          label: {
-            show: true,
-          },
-        },
-        data: mapData,
-      },
-    ],
-  }
-
-  // 添加点击事件
-  if (usaChart) {
-    usaChart.off('click')
-    usaChart.on('click', (params: any) => {
-      showStateDetails(params.name, 'usa')
-    })
-
-    usaChart.setOption(option)
-    // 更新VChart选项
-    usaMapOption.value = option
-  }
-}
-
-// 中国地图更新函数
-function updateChinaMap(value?: string) {
-  // 使用类型断言转换为echarts所需的GeoJSON格式
-  const convertedChinaJson = {
-    type: 'FeatureCollection' as const,
-    features: chinaJson.features,
-  }
-
-  echarts.registerMap('China', convertedChinaJson as any)
-
-  let title: string
-  let colorScheme: string[]
-  let dataRange: number[]
-  let mapData: any[] = []
-
-  if (value === '1') {
-    title = 'Total methane emissions by province in 2022'
-    colorScheme = colorSchemes.emissions
-    dataRange = [1000, 28000]
-    mapData = chinaEmissionsData
-  }
-  else if (value === '2') {
-    title = 'Policy ambition scores for each province'
-    colorScheme = colorSchemes.policy
-    dataRange = [30, 95]
-    mapData = chinaPolicyScoreData
-  }
-  else {
-    title = 'China'
-    colorScheme = ['#e0e0e0']
-    dataRange = [0, 100]
-    mapData = []
-  }
-
-  const option = {
-    backgroundColor: '#ffffff',
-    title: {
-      text: title,
-      left: 'center',
-      textStyle: {
-        fontSize: 16,
-      },
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter(params: any) {
-        if (!params.value && params.value !== 0)
-          return `${params.name}: No data yet`
-        return `${params.name}: ${params.value}${value === '1' ? ' thousand tons' : ' point'}`
-      },
-    },
-    visualMap: {
-      left: 'right',
-      min: dataRange[0],
-      max: dataRange[1],
-      inRange: {
-        color: colorScheme,
-      },
-      text: ['高', '低'],
-      calculable: true,
-      show: value !== '0',
-    },
-    toolbox: {
-      show: true,
-      left: 'left',
-      top: 'top',
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {},
-      },
-    },
-    series: [
-      {
-        name: '数据',
-        type: 'map',
-        map: 'China',
-        roam: true,
-        emphasis: {
-          label: {
-            show: true,
-          },
-        },
-        select: {
-          label: {
-            show: true,
-          },
-        },
-        data: mapData,
-      },
-    ],
-  }
-
-  // 确保图表实例存在
-  if (chinaChart) {
-    // 清除之前的配置
-    chinaChart.clear()
-
-    // 设置新的配置
-    chinaChart.setOption(option, true)
-    // 更新VChart选项
-    chinaMapOption.value = option
-
-    // 添加点击事件
-    chinaChart.off('click')
-    chinaChart.on('click', (params: any) => {
-      console.warn('点击省份:', params.name)
-      showStateDetails(params.name, 'china')
-    })
-  }
-}
-
-function handleFeedbackClick() {
-  feedbackFormDialogVisible.value = true
-}
-
-onMounted(() => {
-  initMap()
-  initLineChart()
-  initPieChart()
-})
-
-// 折线图数据
-const lineChartData = {
-  years: ['2018', '2019', '2020', '2021', '2022'],
-  values: [273.717, 289.451, 265.332, 301.245, 320.189],
-}
-
-// 初始化折线图
-function initLineChart() {
-  const option = {
-    backgroundColor: '#fcdddf',
-    tooltip: {
-      trigger: 'axis',
-      position: 'bottom',
-      axisPointer: {
-        type: 'line',
-        lineStyle: {
-          color: '#5a9fc8',
-          width: 2,
-        },
-      },
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: '14%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: lineChartData.years,
-      axisLine: {
-        lineStyle: {
-          color: '#999',
-        },
-      },
-      axisTick: {
-        show: false,
-      },
-    },
-    yAxis: {
-      type: 'value',
-      name: 'thousand tons',
-      nameTextStyle: {
-        color: '#666',
-        padding: [0, 0, 0, 40],
-      },
-      axisLine: {
-        show: true,
-        lineStyle: {
-          color: '#999',
-        },
-      },
-      splitLine: {
-        lineStyle: {
-          type: 'dashed',
-          color: '#eee',
-        },
-      },
-    },
-    series: [{
-      name: 'Methane Emissions',
-      type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 8,
-      showSymbol: false,
-      lineStyle: {
-        color: '#5a9fc8',
-        width: 3,
-      },
-      itemStyle: {
-        color: '#5a9fc8',
-        borderColor: '#fff',
-        borderWidth: 2,
-      },
-      areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [{
-            offset: 0,
-            color: 'rgba(90, 159, 200, 0.9)',
-          }],
-        },
-      },
-      data: lineChartData.values,
-    }],
-  }
-
-  lineChartOption.value = option
-}
-
-function downloadChart() {
-  if (lineChartRef.value && lineChartRef.value.chart) {
-    downloadChartAsImage(lineChartRef.value.chart, 'methane-emissions', '#fcdddf')
-  }
-  else {
-    ElMessage.warning('无法获取图表实例')
-  }
-}
-
-function downloadChartData() {
-  // 调用后台接口下载数据
-  ElMessageBox.confirm(
-    '确定要下载图表数据吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info',
-    },
-  )
-    .then(() => {
-      // 这里应该调用后台接口
-      // 模拟API调用
-      ElMessage({
-        type: 'success',
-        message: '数据下载请求已发送',
-      })
-
-      // 实际项目中应该替换为真实的API调用
-      // 例如: axios.get('/api/download-chart-data')
-      //   .then(response => {
-      //     // 处理响应
-      //   })
-      //   .catch(error => {
-      //     ElMessage.error('下载失败：' + error.message)
-      //   })
-    })
-    .catch(() => {
-      // 用户取消下载
-    })
-}
-
-// 初始化饼图
-function initPieChart() {
-  const option = {
-    backgroundColor: '#fcdddf',
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'horizontal',
-      bottom: 10,
-      left: 'center',
-      itemGap: 20,
-      data: methaneEmissionsBySectorsTableData.value.map(item => item.name)
-    },
-    grid: {
-      containLabel: true
-    },
-    series: [
-      {
-        name: '排放源',
-        type: 'pie',
-        radius: ['25%', '60%'],
-        center: ['50%', '40%'],
-        avoidLabelOverlap: true,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: '#fff',
-          borderWidth: 2
-        },
-        label: {
-          show: true,
-          position: 'outside',
-          formatter: '{b}: {c} ({d}%)',
-          alignTo: 'edge',
-          minMargin: 5,
-          edgeDistance: 10,
-          lineHeight: 15
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 14,
-            fontWeight: 'bold'
-          }
-        },
-        labelLine: {
-          show: true,
-          length: 15,
-          length2: 20,
-          smooth: true,
-          lineStyle: {
-            width: 1,
-            type: 'solid'
-          }
-        },
-        data: methaneEmissionsBySectorsTableData.value.map(item => {
-          return {
-            name: item.name,
-            value: parseFloat(item.year)
-          }
-        })
-      }
-    ]
-  }
-  
-  pieChartOption.value = option
-}
-
-// 下载饼图
-function downloadPieChart() {
-  if (pieChartRef.value && pieChartRef.value.chart) {
-    downloadChartAsImage(pieChartRef.value.chart, 'methane-emissions-by-sector', '#fcdddf')
-  } else {
-    ElMessage.warning('无法获取图表实例')
-  }
-}
-
-// 下载饼图数据
-function downloadPieChartData() {
-  // 调用后台接口下载数据
-  ElMessageBox.confirm(
-    '确定要下载饼图数据吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info',
-    }
-  )
-    .then(() => {
-      // 这里应该调用后台接口
-      // 模拟API调用
-      ElMessage({
-        type: 'success',
-        message: '饼图数据下载请求已发送',
-      })
-    })
-    .catch(() => {
-      // 用户取消下载
-    })
-}
-
-// 初始化详细地区地图
+// 初始化详细下钻地区地图
 function initDetailMap(mapName: string, country: string) {
   // 确保DOM已经渲染
   nextTick(() => {
@@ -1141,6 +417,404 @@ function initDetailMap(mapName: string, country: string) {
     }
   });
 }
+// 定义地区地图和坐标点数据
+const currentDetailMapName = ref('')
+const projectPoints = ref<any[]>([])
+
+// 模拟项目点位信息（实际项目中应从API获取）
+const usaProjectPoints = [
+  { name: 'California Solar Project', longitude: -119.4179, latitude: 36.7783, description: '太阳能发电项目，减少甲烷排放', value: 35 },
+  { name: 'California Wind Project', longitude: -121.4944, latitude: 38.5816, description: '风能发电项目，替代化石燃料', value: 28 },
+  { name: 'Texas Wind Farm', longitude: -99.9018, latitude: 31.9686, description: '风能发电场，减少化石燃料使用', value: 42 },
+  { name: 'Texas Oil Capture', longitude: -97.7431, latitude: 30.2672, description: '石油开采甲烷捕获项目', value: 38 },
+  { name: 'New York Waste Management', longitude: -73.9352, latitude: 40.7306, description: '垃圾处理项目，减少填埋场甲烷排放', value: 28 },
+  { name: 'New York Landfill Gas', longitude: -74.0060, latitude: 40.7128, description: '填埋场气体收集与利用', value: 25 },
+  { name: 'Colorado Natural Gas Capture', longitude: -105.7821, latitude: 39.5501, description: '天然气捕获项目', value: 23 },
+  { name: 'Colorado Methane Reduction', longitude: -104.9903, latitude: 39.7392, description: '甲烷减排综合项目', value: 19 },
+]
+
+const chinaProjectPoints = [
+  { name: '北京市生物质能源项目', longitude: 116.4074, latitude: 39.9042, description: '生物质能源转换项目', value: 25 },
+  { name: '北京市垃圾填埋气回收', longitude: 116.2363, latitude: 39.8343, description: '垃圾填埋场甲烷回收利用', value: 22 },
+  { name: '四川省沼气利用工程', longitude: 104.0665, latitude: 30.6598, description: '农村沼气利用减排项目', value: 38 },
+  { name: '四川省畜牧业减排', longitude: 103.7558, latitude: 29.6136, description: '畜牧业甲烷减排项目', value: 33 },
+  { name: '上海市垃圾分类处理', longitude: 121.4737, latitude: 31.2304, description: '城市垃圾分类与甲烷回收', value: 31 },
+  { name: '上海市工业废水处理', longitude: 121.5574, latitude: 31.0449, description: '工业废水处理减少甲烷排放', value: 27 },
+  { name: '广东省畜牧业减排项目', longitude: 113.2644, latitude: 23.1291, description: '畜牧业甲烷捕获与利用', value: 29 },
+  { name: '广东省天然气利用项目', longitude: 114.0579, latitude: 22.5431, description: '天然气替代煤炭清洁能源项目', value: 32 },
+]
+
+// 显示州或省份详情
+function showStateDetails(name: string, country: string) {
+  mapInfoDialogTitle.value = `${name}`
+  mapInfoDialogVisible.value = true
+
+  // 根据不同国家和地区加载对应数据
+  if (country === 'usa') {
+    // 加载美国数据
+  }
+  else if (country === 'china') {
+    // 加载中国数据
+  }
+  
+  // 初始化详细地图
+  initDetailMap(name, country)
+}
+
+// 弹窗，结束}
+
+// 反馈表单弹窗，开始{
+const feedbackFormDialogVisible = ref(false)
+// 表单数据
+const feedbackForm = ref({
+  name: '',
+  email: '',
+  region: '',
+  message: '',
+  captcha: '',
+})
+
+function handleFeedbackFormSubmit() {
+  console.log('handleFeedbackFormSubmit')
+}
+
+function handleFeedbackClick() {
+  feedbackFormDialogVisible.value = true
+}
+
+// 反馈表单弹窗，结束}
+
+// 切换地图数据源
+const dataSources = ref('')
+
+
+
+// 初始化页面地图
+function initMap() {
+  // 创建图表实例
+  usaChart = echarts.init(document.getElementById('usa-map'))
+  chinaChart = echarts.init(document.getElementById('china-map'))
+
+  updateChinaMap()
+  updateUSAMap()
+}
+
+// 页面地图切换数据
+function handleUpdateMapChange(value?: string) {
+  updateUSAMap(value)
+  updateChinaMap(value)
+}
+
+// 美国地图更新函数
+function updateUSAMap(value?: string) {
+  // 使用类型断言转换为echarts所需的GeoJSON格式
+  const convertedUSAJson = {
+    type: 'FeatureCollection' as const,
+    features: usaJson.features,
+  }
+
+  echarts.registerMap('USA', convertedUSAJson as any, {
+    'Alaska': {
+      left: -131,
+      top: 25,
+      width: 15,
+    },
+    'Hawaii': {
+      left: -110,
+      top: 28,
+      width: 5,
+    },
+    'Puerto Rico': {
+      left: -76,
+      top: 26,
+      width: 2,
+    },
+  })
+
+  let title: string
+  let colorScheme: string[]
+  let dataRange: number[]
+  let mapData: any[] = []
+
+  if (value === '1') {
+    title = 'Total methane emissions by state in 2022'
+    colorScheme = COLOR_SCHEMES.EMISSIONS
+    dataRange = [300, 35000]
+    mapData = emissionsData
+  }
+  else if (value === '2') {
+    title = 'Strength of policy objectives scores for each state'
+    colorScheme = COLOR_SCHEMES.POLICY
+    dataRange = [0, 100]
+    mapData = policyScoreData
+  }
+  else {
+    title = 'USA'
+    colorScheme = ['#e0e0e0']
+    dataRange = [0, 100]
+    mapData = []
+  }
+
+  const option = {
+    title: {
+      text: title,
+      left: 'center',
+    },
+    tooltip: {
+      trigger: 'item',
+      showDelay: 0,
+      transitionDuration: 0.2,
+      formatter(params: any) {
+        if (!params.value)
+          return `${params.name}: No data yet`
+        return `${params.name}: ${params.value}${value === '1' ? ' thousand tons' : ' point'}`
+      },
+    },
+    visualMap: {
+      left: 'right',
+      min: dataRange[0],
+      max: dataRange[1],
+      inRange: {
+        color: colorScheme,
+      },
+      text: ['高', '低'],
+      calculable: true,
+      show: value !== '0',
+    },
+    toolbox: {
+      show: true,
+      left: 'left',
+      top: 'top',
+      feature: {
+        dataView: { readOnly: false },
+        restore: {},
+        saveAsImage: {},
+      },
+    },
+    series: [
+      {
+        name: '数据',
+        type: 'map',
+        roam: true,
+        map: 'USA',
+        emphasis: {
+          label: {
+            show: true,
+          },
+        },
+        select: {
+          label: {
+            show: true,
+          },
+        },
+        data: mapData,
+      },
+    ],
+  }
+
+  // 添加点击事件
+  if (usaChart) {
+    usaChart.off('click')
+    usaChart.on('click', (params: any) => {
+      showStateDetails(params.name, 'usa')
+    })
+
+    usaChart.setOption(option)
+    // 更新VChart选项
+    usaMapOption.value = option
+  }
+}
+
+// 中国地图更新函数
+function updateChinaMap(value?: string) {
+  // 使用类型断言转换为echarts所需的GeoJSON格式
+  const convertedChinaJson = {
+    type: 'FeatureCollection' as const,
+    features: chinaJson.features,
+  }
+
+  echarts.registerMap('China', convertedChinaJson as any)
+
+  let title: string
+  let colorScheme: string[]
+  let dataRange: number[]
+  let mapData: any[] = []
+
+  if (value === '1') {
+    title = 'Total methane emissions by province in 2022'
+    colorScheme = COLOR_SCHEMES.EMISSIONS
+    dataRange = [1000, 28000]
+    mapData = chinaEmissionsData
+  }
+  else if (value === '2') {
+    title = 'Policy ambition scores for each province'
+    colorScheme = COLOR_SCHEMES.POLICY
+    dataRange = [30, 95]
+    mapData = chinaPolicyScoreData
+  }
+  else {
+    title = 'China'
+    colorScheme = ['#e0e0e0']
+    dataRange = [0, 100]
+    mapData = []
+  }
+
+  const option = {
+    backgroundColor: '#ffffff',
+    title: {
+      text: title,
+      left: 'center',
+      textStyle: {
+        fontSize: 16,
+      },
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter(params: any) {
+        if (!params.value && params.value !== 0)
+          return `${params.name}: No data yet`
+        return `${params.name}: ${params.value}${value === '1' ? ' thousand tons' : ' point'}`
+      },
+    },
+    visualMap: {
+      left: 'right',
+      min: dataRange[0],
+      max: dataRange[1],
+      inRange: {
+        color: colorScheme,
+      },
+      text: ['高', '低'],
+      calculable: true,
+      show: value !== '0',
+    },
+    toolbox: {
+      show: true,
+      left: 'left',
+      top: 'top',
+      feature: {
+        dataView: { readOnly: false },
+        restore: {},
+        saveAsImage: {},
+      },
+    },
+    series: [
+      {
+        name: '数据',
+        type: 'map',
+        map: 'China',
+        roam: true,
+        emphasis: {
+          label: {
+            show: true,
+          },
+        },
+        select: {
+          label: {
+            show: true,
+          },
+        },
+        data: mapData,
+      },
+    ],
+  }
+
+  // 确保图表实例存在
+  if (chinaChart) {
+    // 清除之前的配置
+    chinaChart.clear()
+
+    // 设置新的配置
+    chinaChart.setOption(option, true)
+    // 更新VChart选项
+    chinaMapOption.value = option
+
+    // 添加点击事件
+    chinaChart.off('click')
+    chinaChart.on('click', (params: any) => {
+      console.warn('点击省份:', params.name)
+      showStateDetails(params.name, 'china')
+    })
+  }
+}
+
+
+
+onMounted(() => {
+  initMap()
+})
+
+// 折线图数据
+const lineChartData = {
+  years: ['2018', '2019', '2020', '2021', '2022'],
+  values: [273.717, 289.451, 265.332, 301.245, 320.189],
+}
+
+// 通用图表下载方法
+function downloadEchartsImage(chartRef: any, filename: string, backgroundColor: string = '#fcdddf') {
+  if (chartRef.value) {
+    const chartInstance = chartRef.value.getChartInstance()
+    if (chartInstance) {
+      downloadChartAsImage(chartInstance, filename, backgroundColor)
+    } else {
+      ElMessage.warning('无法获取图表实例')
+    }
+  } else {
+    ElMessage.warning('无法获取图表组件')
+  }
+}
+
+function downloadChart() {
+  downloadEchartsImage(lineChartRef, 'methane-emissions')
+}
+
+function downloadChartData() {
+  // 调用后台接口下载数据
+  ElMessageBox.confirm(
+    '确定要下载图表数据吗？',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info',
+    },
+  )
+    .then(() => {
+      ElMessage({
+        type: 'success',
+        message: '数据下载请求已发送',
+      })
+    })
+    .catch(() => {
+      // 用户取消下载
+    })
+}
+
+function downloadPieChart() {
+  downloadEchartsImage(pieChartRef, 'methane-emissions-by-sector')
+}
+
+function downloadPieChartData() {
+  ElMessageBox.confirm(
+    '确定要下载饼图数据吗？',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info',
+    }
+  )
+    .then(() => {
+      ElMessage({
+        type: 'success',
+        message: '饼图数据下载请求已发送',
+      })
+    })
+    .catch(() => {
+      // 用户取消下载
+    })
+}
+
+
 </script>
 
 <template>
@@ -1184,7 +858,7 @@ function initDetailMap(mapName: string, country: string) {
       </el-header>
       <el-main>
         <el-select
-          v-model="value"
+          v-model="dataSources"
           clearable
           placeholder="Select Display Data "
           @change="handleUpdateMapChange"
@@ -1247,7 +921,7 @@ function initDetailMap(mapName: string, country: string) {
   <el-button class="feedback-btn" type="primary" :icon="Edit" circle @click="handleFeedbackClick" />
 
   <!-- 点击地图的弹窗 -->
-  <el-dialog v-model="mapInfoDialogVisible" :title="mapInfoDialogTitle" width="800" draggable>
+  <el-dialog v-model="mapInfoDialogVisible" :title="mapInfoDialogTitle" width="1000" draggable>
     <el-tabs v-model="mapTabsActive" class="map-tabs">
       <el-tab-pane label="policy comprehensiveness" name="policyComprehensiveness">
         <el-table :data="policyComprehensivenessTableData" border style="width: 100%">
@@ -1256,14 +930,14 @@ function initDetailMap(mapName: string, country: string) {
           <el-table-column prop="yearEffective" label="Year Effective" width="180" />
           <el-table-column prop="policy" label="Policy" width="180" />
           <el-table-column prop="country" label="Type of Instrument" width="180" />
-          <el-table-column prop="country" label="Cross-sectoral coordination (F)" width="240">
+          <el-table-column prop="yearEffective" label="Cross-sectoral coordination (F)" width="240">
             <template #default="{ row }">
               <span :style="{ color: row.country === 'Y' ? 'green' : 'red' }">
                 {{ row.country }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="country" label="Policy instruments (F)" width="180">
+          <el-table-column prop="yearEffective" label="Policy instruments (F)" width="180">
             <template #default="{ row }">
               <span :style="{ color: row.country === 'Y' ? 'green' : 'red' }">
                 {{ row.country }}
@@ -1331,6 +1005,9 @@ function initDetailMap(mapName: string, country: string) {
         </div>
       </el-tab-pane>
       <el-tab-pane label="methane emissions over time" name="methaneEmissionsOverTime">
+        <!-- 表单与下载左右对齐 -->
+        <el-row :gutter="20">
+            <el-col :span="16">
         <el-form :inline="true" :model="methaneEmissionsOverTimeForm" class="demo-form-inline">
           <el-form-item>
             <el-select
@@ -1392,23 +1069,24 @@ function initDetailMap(mapName: string, country: string) {
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="onSubmit">
+            <el-button type="primary" @click="handleMethaneEmissionsOverTimeSubmit">
               Query
             </el-button>
           </el-form-item>
         </el-form>
-
+            </el-col>
+            <el-col :span="8">
         <div class="chart-actions">
-          <el-button type="primary" size="small" @click="downloadChart">
-            <el-icon><Download /></el-icon> Download chart
-          </el-button>
-          <el-button type="success" size="small" @click="downloadChartData">
-            <el-icon><DocumentCopy /></el-icon> Download data
-          </el-button>
+          <DownloadChartButton :onClick="downloadChart" label="Download chart" />
+          <DownloadDataButton :onClick="downloadChartData" label="Download data" />
         </div>
-
+            </el-col>
+        </el-row>
         <div id="line-chart" class="chart">
-          <VChart class="line-chart" :option="lineChartOption" ref="lineChartRef" autoresize />
+          <LineChart 
+            :chart-data="lineChartData" 
+            ref="lineChartRef" 
+          />
         </div>
         <el-table :data="methaneEmissionsOverTimeTableData" border style="width: 100%">
           <el-table-column prop="name" label="name" width="180" />
@@ -1432,16 +1110,15 @@ function initDetailMap(mapName: string, country: string) {
       </el-tab-pane>
       <el-tab-pane label="methane emissions (by sectors)" name="methaneEmissionsBySectors">
         <div class="chart-actions">
-          <el-button type="primary" size="small" @click="downloadPieChart">
-            <el-icon><Download /></el-icon> 下载图表
-          </el-button>
-          <el-button type="success" size="small" @click="downloadPieChartData">
-            <el-icon><DocumentCopy /></el-icon> 下载数据
-          </el-button>
+          <DownloadChartButton :onClick="downloadPieChart" label="Download chart" />
+          <DownloadDataButton :onClick="downloadPieChartData" label="Download data" />
         </div>
         
         <div id="pie-chart" class="chart">
-          <VChart class="pie-chart" :option="pieChartOption" ref="pieChartRef" autoresize />
+          <PieChart 
+            :chart-data="methaneEmissionsBySectorsTableData" 
+            ref="pieChartRef" 
+          />
         </div>
         
         <el-table :data="methaneEmissionsBySectorsTableData" border style="width: 100%">
@@ -1451,14 +1128,14 @@ function initDetailMap(mapName: string, country: string) {
       </el-tab-pane>
 
       <el-tab-pane label="policies and pilot projects" name="policiesAndPilotProjects">
-          <el-form :inline="true" :model="formInline" class="demo-form-inline">
+          <el-form :inline="true" :model="policiesAndPilotProjectsForm" class="demo-form-inline">
             <el-form-item style="width: 310px">
-              <el-input v-model="formInline.user" placeholder="Jurisdiction" clearable />
+              <el-input v-model="policiesAndPilotProjectsForm.user" placeholder="Jurisdiction" clearable />
             </el-form-item>
             <el-form-item style="width: 180px">
               <el-select
                 
-                v-model="formInline.region"
+                v-model="policiesAndPilotProjectsForm.region"
                 placeholder="Sectors"
                 clearable
               >
@@ -1470,7 +1147,7 @@ function initDetailMap(mapName: string, country: string) {
             </el-form-item>
             <el-form-item>
               <el-date-picker
-                v-model="formInline.date"
+                v-model="policiesAndPilotProjectsForm.date"
                 range-separator="To"
                 start-placeholder="Start year"
                 end-placeholder="End year"
@@ -1480,15 +1157,13 @@ function initDetailMap(mapName: string, country: string) {
               />
             </el-form-item>
             <el-form-item  style="width: 310px">
-              <el-input v-model="formInline.policy" placeholder="Policy" clearable />
+              <el-input v-model="policiesAndPilotProjectsForm.policy" placeholder="Policy" clearable />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="onSubmit">
+              <el-button type="primary" @click="handlePoliciesAndPilotProjectsSubmit">
                 Query
               </el-button>
-              <el-button type="success" @click="downloadPolicyAndPilotProjectsData">
-                <el-icon><DocumentCopy /></el-icon> Download
-              </el-button>
+              <DownloadDataButton :onClick="downloadPolicyAndPilotProjectsData" label="Download" />
             </el-form-item>
           </el-form>
         <el-table :data="policyAndPilotProjectsTableData" border style="width: 100%">
@@ -1560,32 +1235,32 @@ function initDetailMap(mapName: string, country: string) {
 
   <!-- 反馈表单弹出框 -->
   <el-dialog v-model="feedbackFormDialogVisible" title="Feedback or Request Assistance" width="500" draggable>
-    <el-form :model="form" label-width="auto" style="max-width: 600px">
+    <el-form :model="feedbackForm" label-width="auto" style="max-width: 600px">
       <el-form-item label="Name">
-        <el-input v-model="form.name" />
+        <el-input v-model="feedbackForm.name" />
       </el-form-item>
       <el-form-item label="Email">
-        <el-input v-model="form.email" />
+        <el-input v-model="feedbackForm.email" />
       </el-form-item>
       <el-form-item label="Subject">
-        <el-select v-model="form.region" placeholder="please select your zone">
+        <el-select v-model="feedbackForm.region" placeholder="please select your zone">
           <el-option label="Feedback" value="1" />
           <el-option label="Contact CCCI" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="Message">
-        <el-input v-model="form.message" type="textarea" />
+        <el-input v-model="feedbackForm.message" type="textarea" />
       </el-form-item>
       <el-form-item label="CAPTCHA">
         <el-col :span="10">
           <el-image style="width: 100px; height: 100px" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" />
         </el-col>
         <el-col :span="14">
-          <el-input v-model="form.captcha" placeholder="Please enter the verification code" />
+          <el-input v-model="feedbackForm.captcha" placeholder="Please enter the verification code" />
         </el-col>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">
+        <el-button type="primary" @click="handleFeedbackFormSubmit">
           Send
         </el-button>
       </el-form-item>
@@ -1647,16 +1322,6 @@ function initDetailMap(mapName: string, country: string) {
   color: #999;
 }
 
-.line-chart {
-  width: 100%;
-  height: 260px;
-}
-
-.pie-chart {
-  width: 100%;
-  height: 400px;
-}
-
 .chart {
   border: 1px solid #eee;
   border-radius: 4px;
@@ -1668,7 +1333,6 @@ function initDetailMap(mapName: string, country: string) {
 }
 
 .chart-actions {
-  margin-top: 10px;
   margin-bottom: 10px;
   text-align: right;
 }

@@ -29,9 +29,8 @@ export function downloadChartAsImage(
       link.href = url
       document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
       
-      // 清理DOM
+      // 清理DOM（只在setTimeout中移除一次）
       setTimeout(() => {
         document.body.removeChild(link)
       }, 100)

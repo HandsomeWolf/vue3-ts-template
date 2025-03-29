@@ -8,6 +8,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ChartDownloadButton: typeof import('./../components/business/ChartDownloadButton.vue')['default']
+    DataDownloadButton: typeof import('./../components/business/DataDownloadButton.vue')['default']
+    DownloadButton: typeof import('./../components/echarts/DownloadButton.vue')['default']
+    DownloadChartButton: typeof import('./../components/echarts/DownloadChartButton.vue')['default']
+    DownloadDataButton: typeof import('./../components/echarts/DownloadDataButton.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCol: typeof import('element-plus/es')['ElCol']
@@ -35,6 +40,8 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
+    LineChart: typeof import('./../components/echarts/LineChart.vue')['default']
+    PieChart: typeof import('./../components/echarts/PieChart.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

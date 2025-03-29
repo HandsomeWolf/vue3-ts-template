@@ -1,22 +1,24 @@
 <script setup lang='ts'>
 import chinaJson from '@/assets/GEOJSON/china.json'
 import usaJson from '@/assets/GEOJSON/USA.json'
+import { chinaEmissionsData, chinaPolicyScoreData, emissionsData, policyScoreData } from '@/mock'
+import { exportToExcel } from '@/utils'
+import { downloadChartAsImage } from '@/utils/echarts'
 import {
   Edit,
+    InfoFilled
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { onMounted, ref, nextTick } from 'vue'
-import { exportToExcel } from '@/utils'
-import { downloadChartAsImage } from '@/utils/echarts'
-import { emissionsData, policyScoreData, chinaEmissionsData, chinaPolicyScoreData } from '@/mock'
+import { nextTick, onMounted, ref } from 'vue'
 // 引入自定义图表组件
-import LineChart from '@/components/echarts/LineChart.vue'
-import PieChart from '@/components/echarts/PieChart.vue'
 import DownloadChartButton from '@/components/echarts/DownloadChartButton.vue'
 import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
+import LineChart from '@/components/echarts/LineChart.vue'
+import PieChart from '@/components/echarts/PieChart.vue'
 import { COLOR_SCHEMES } from '@/constants/echarts'
-
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
 // 图表实例
 let usaChart: echarts.ECharts | null = null
 let chinaChart: echarts.ECharts | null = null
@@ -294,13 +296,6 @@ function initDetailMap(mapName: string, country: string) {
         // 创建地图配置
         const option = {
           backgroundColor: '#ffffff',
-          title: {
-            text: `${mapName} 甲烷减排项目分布`,
-            left: 'center',
-            textStyle: {
-              fontSize: 16,
-            },
-          },
           tooltip: {
             trigger: 'item',
             formatter: function(params: any) {
@@ -313,16 +308,6 @@ function initDetailMap(mapName: string, country: string) {
               }
               return params.name;
             }
-          },
-          toolbox: {
-            show: true,
-            left: 'left',
-            top: 'top',
-            feature: {
-              dataView: { readOnly: false },
-              restore: {},
-              saveAsImage: {},
-            },
           },
           visualMap: {
             show: false,
@@ -338,13 +323,22 @@ function initDetailMap(mapName: string, country: string) {
               type: 'map',
               map: mapName,
               roam: true,
+              label: {
+                show: true,
+                fontSize: 10
+              },
               emphasis: {
                 label: {
-                  show: true
+                  show: true,
+                  fontSize: 12,
+                  fontWeight: 'bold'
                 },
                 itemStyle: {
                   areaColor: '#e6f7ff'
                 }
+              },
+              select: {
+                disabled: true
               },
               itemStyle: {
                 areaColor: '#f3f3f3',
@@ -397,13 +391,6 @@ function initDetailMap(mapName: string, country: string) {
       // 创建备用地图显示
       const option = {
         backgroundColor: '#ffffff',
-        title: {
-          text: `${mapName} (地图数据暂不可用)`,
-          left: 'center',
-          textStyle: {
-            fontSize: 16,
-          },
-        },
         series: []
       };
       
@@ -487,7 +474,21 @@ function handleFeedbackClick() {
 // 切换地图数据源
 const dataSources = ref('')
 
-
+// 标题的数据，便于重用
+const mapTitles: Record<string, { usa: string; china: string }> = {
+  default: {
+    usa: 'United States',
+    china: 'China'
+  },
+  '1': {
+    usa: 'Total methane emissions by state in 2022',
+    china: 'Total methane emissions by province in 2022'
+  },
+  '2': {
+    usa: 'Strength of policy objectives scores for each state',
+    china: 'Policy ambition scores for each province'
+  }
+}
 
 // 初始化页面地图
 function initMap() {
@@ -556,10 +557,6 @@ function updateUSAMap(value?: string) {
   }
 
   const option = {
-    title: {
-      text: title,
-      left: 'center',
-    },
     tooltip: {
       trigger: 'item',
       showDelay: 0,
@@ -581,31 +578,28 @@ function updateUSAMap(value?: string) {
       calculable: true,
       show: value !== '0',
     },
-    toolbox: {
-      show: true,
-      left: 'left',
-      top: 'top',
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {},
-      },
-    },
     series: [
       {
         name: '数据',
         type: 'map',
         roam: true,
         map: 'USA',
+          label: {
+            show: true,
+          fontSize: 8
+          },
         emphasis: {
           label: {
             show: true,
+            fontSize: 10,
+            fontWeight: 'bold'
           },
+          itemStyle: {
+            areaColor: '#e6f7ff'
+          }
         },
         select: {
-          label: {
-            show: true,
-          },
+          disabled: true
         },
         data: mapData,
       },
@@ -661,13 +655,6 @@ function updateChinaMap(value?: string) {
 
   const option = {
     backgroundColor: '#ffffff',
-    title: {
-      text: title,
-      left: 'center',
-      textStyle: {
-        fontSize: 16,
-      },
-    },
     tooltip: {
       trigger: 'item',
       formatter(params: any) {
@@ -687,31 +674,28 @@ function updateChinaMap(value?: string) {
       calculable: true,
       show: value !== '0',
     },
-    toolbox: {
-      show: true,
-      left: 'left',
-      top: 'top',
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {},
-      },
-    },
     series: [
       {
         name: '数据',
         type: 'map',
         map: 'China',
         roam: true,
+          label: {
+            show: true,
+          fontSize: 8
+          },
         emphasis: {
           label: {
             show: true,
+            fontSize: 10,
+            fontWeight: 'bold'
           },
+          itemStyle: {
+            areaColor: '#e6f7ff'
+          }
         },
         select: {
-          label: {
-            show: true,
-          },
+          disabled: true
         },
         data: mapData,
       },
@@ -814,107 +798,93 @@ function downloadPieChartData() {
     })
 }
 
+const showSectorInfo = ref(false)
+const sectorList = [
+  { name: 'Biomass/biofuels burning' },
+  { name: 'Coal exploitation' },
+  { name: 'Fossil Energy Combustion' },
+  { name: 'Landfills' },
+  { name: 'Livestock' },
+  { name: 'Oil and gas exploitation' },
+  { name: 'Rice cultivation' },
+  { name: 'Wastewater' }
+]
+const sectorColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#8B5CF6', '#06b6d4', '#d946ef']
+
+function toggleSectorInfo() {
+  showSectorInfo.value = !showSectorInfo.value
+}
 
 </script>
 
 <template>
   <div class="common-layout">
     <el-container>
-      <el-header>
-        <h1 class="title">
-          Global Methane Monitor
-        </h1>
-        <div class="description">
-          Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
-        </div>
-        <el-collapse accordion>
-          <el-collapse-item name="1">
-            <template #title>
-              Names of Sector <el-icon class="header-icon">
-                <info-filled />
-              </el-icon>
-            </template>
-            <div>
-              Biomass/biofuels burning
-            </div>
-            <div>
-              Coal exploitation
-            </div>
-            <div>
-              Fossil Energy Combustion
-            </div>
-            <div>
-              Landfills
-            </div>
-            <div>
-              Livestock
-            </div>
-            <div>
-              Oil and gas exploitation
-            </div>
-            <div>Rice cultivation</div>
-          </el-collapse-item>
-        </el-collapse>
-      </el-header>
+        <Header />
       <el-main>
+        <div class="main-container">
+          <div class="dashboard-header">
+            <h2 class="dashboard-title">Interactive Maps</h2>
+            <div class="dashboard-controls">
         <el-select
-          v-model="dataSources"
+                v-model="dataSources"
           clearable
-          placeholder="Select Display Data "
+                placeholder="Select Data to Display"
+                class="data-select"
           @change="handleUpdateMapChange"
         >
           <el-option
-            label="total emission"
+                  label="Total Emissions Data"
             value="1"
           />
           <el-option
-            label="policy ambition"
+                  label="Policy Ambition Scores"
             value="2"
           />
         </el-select>
+              <div class="dashboard-legend" v-if="dataSources">
+                <div class="legend-title">{{ dataSources === '1' ? 'Emissions Level' : 'Policy Score' }}</div>
+                <div class="legend-gradient" :class="{'emissions-gradient': dataSources === '1', 'policy-gradient': dataSources === '2'}"></div>
+                <div class="legend-labels">
+                  <span>{{ dataSources === '1' ? 'Low' : 'Weak' }}</span>
+                  <span>{{ dataSources === '1' ? 'High' : 'Strong' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <div class="map-title">
-              USA
+          <div class="maps-container">
+            <div class="map-card">
+              <div class="map-card-header">
+                <h3 class="map-card-title">{{ dataSources ? mapTitles[dataSources].usa : mapTitles.default.usa }}</h3>
+                <div class="map-card-subtitle" v-if="dataSources === '1'">Methane emissions in thousand tons</div>
+                <div class="map-card-subtitle" v-else-if="dataSources === '2'">Score out of 100 points</div>
             </div>
+              <div class="map-card-body">
             <VChart id="usa-map" class="map-chart usa-map" :option="usaMapOption" autoresize />
-          </el-col>
-          <el-col :span="12">
-            <div class="map-title">
-              China
             </div>
+              <div class="map-card-footer">
+                <div class="map-info">Click on a state to view detailed information</div>
+              </div>
+            </div>
+
+            <div class="map-card">
+              <div class="map-card-header">
+                <h3 class="map-card-title">{{ dataSources ? mapTitles[dataSources].china : mapTitles.default.china }}</h3>
+                <div class="map-card-subtitle" v-if="dataSources === '1'">Methane emissions in thousand tons</div>
+                <div class="map-card-subtitle" v-else-if="dataSources === '2'">Score out of 100 points</div>
+              </div>
+              <div class="map-card-body">
             <VChart id="china-map" class="map-chart china-map" :option="chinaMapOption" autoresize />
-          </el-col>
-        </el-row>
+              </div>
+              <div class="map-card-footer">
+                <div class="map-info">Click on a province to view detailed information</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </el-main>
-      <el-footer>
-        <footer>
-          <el-descriptions>
-            <el-descriptions-item label="Disclaimer">
-              <div>Data subject to updates and change over time. Emission data is provided by 2022 and policy and project data is provided by 2024</div>
-              <div>How to Cite the Data: [specific text TBD] </div>
-            </el-descriptions-item>
-            <el-descriptions-item label="Research Team">
-              <div>
-                California-China Climate Institute, University of California, Berkeley: Fan Dai, Rixin Zhu, Jessica Gordon
-              </div>
-              <div>
-                Hong Kong University: Yuyu Zhou, Fengxiang Guo
-              </div>
-            </el-descriptions-item>
-            <el-descriptions-item label="Updates">
-              CCCI will post notes about webpage updates periodically
-            </el-descriptions-item>
-            <el-descriptions-item label="Data Sources">
-              Text TBD
-            </el-descriptions-item>
-            <el-descriptions-item label="Acknowledgments">
-              We would like to thank Prof. Yuyu Zhou and Dr. Fengxiang Guo for sharing their data. We would also like to thank [list of website designers] for designing the site.
-            </el-descriptions-item>
-          </el-descriptions>
-        </footer>
-      </el-footer>
+        <Footer />
     </el-container>
   </div>
 
@@ -1297,77 +1267,473 @@ function downloadPieChartData() {
 </template>
 
 <style lang='scss' scoped>
+.common-layout {
+  background-color: #f9fbfd;
+  min-height: 100vh;
+}
+
+
+.el-main {
+  padding: 30px;
+  
+  .el-select {
+    margin-bottom: 20px;
+    width: 200px;
+  }
+  
+  .el-row {
+    margin-bottom: 20px;
+  }
+}
+
 .map-chart {
   width: 100%;
   height: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .map-title {
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   margin-bottom: 15px;
+  color: #333;
 }
 
 .feedback-btn {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 25px;
+  bottom: 25px;
   z-index: 999;
+  width: 50px;
+  height: 50px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
 }
 
+::v-deep(.el-footer){
+  height: auto;
+}
+
+::v-deep(.el-header){
+  height: auto;
+}
+
+
 .remark {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #999;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #909399;
+  font-style: italic;
 }
 
 .chart {
-  border: 1px solid #eee;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 10px;
-}
-::v-deep(.el-form--inline .el-form-item) {
-  margin-right: 12px;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .chart-actions {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   text-align: right;
+  
+  .el-button {
+    margin-left: 10px;
+  }
 }
 
+// 对话框样式优化
+.el-dialog {
+  border-radius: 8px;
+  overflow: hidden;
+  
+  .el-dialog__header {
+    padding: 20px;
+    background-color: #f5f7fa;
+  }
+  
+  .el-dialog__title {
+    font-weight: bold;
+    color: #303133;
+  }
+  
+  .el-dialog__body {
+    padding: 25px;
+  }
+}
+
+// 标签页样式
+.map-tabs {
+  .el-tabs__header {
+    margin-bottom: 20px;
+  }
+  
+  .el-tabs__item {
+    padding: 0 20px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+  }
+  
+  .el-tab-pane {
+    padding: 10px 0;
+  }
+}
+
+// 表格样式优化
+.el-table {
+  margin-top: 15px;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  .el-table__header th {
+    background-color: #f5f7fa;
+    color: #606266;
+    font-weight: bold;
+  }
+  
+  .el-button--small {
+    padding: 8px 15px;
+  }
+}
+
+// 详细地图容器样式
 .detail-map {
   width: 100%;
-  height: 500px;
+  height: 550px;
+  border-radius: 8px;
 }
 
 .detail-map-container {
   padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .map-description {
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #666;
+  margin-bottom: 20px;
+  font-size: 15px;
+  color: #606266;
+  line-height: 1.6;
 }
 
 .point-list {
-  margin-top: 20px;
+  margin-top: 30px;
+  
+  h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #303133;
+    border-left: 4px solid #409EFF;
+    padding-left: 10px;
+  }
 }
 
 .no-data {
   text-align: center;
-  margin: 20px 0;
-  color: #999;
-  font-size: 14px;
+  margin: 40px 0;
+  color: #909399;
+  font-size: 16px;
 }
 
 .detail-map-info {
   background-color: #f0f9ff;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
   border-left: 4px solid #1890ff;
+  font-size: 15px;
+  line-height: 1.5;
+  
+  strong {
+    color: #1890ff;
+  }
 }
+
+// 改进表单样式
+.el-form {
+  &.demo-form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    
+    .el-form-item {
+      margin-bottom: 10px;
+      margin-right: 0;
+    }
+  }
+}
+
+// 自定义组件样式
+:deep(.el-collapse) {
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+  border: 1px solid #e4e7ed;
+  
+  .el-collapse-item__header {
+    padding: 0 20px;
+    font-weight: bold;
+  }
+  
+  .el-collapse-item__content {
+    padding: 15px 20px;
+  }
+}
+
+
+
+.main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 40px;
+    height: 3px;
+    background-color: #409EFF;
+    border-radius: 3px;
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+  }
+}
+
+.dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
+
+.data-select {
+  width: 240px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.dashboard-legend {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.legend-title {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #606266;
+}
+
+.legend-gradient {
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  
+  &.emissions-gradient {
+    background: linear-gradient(to right, #FFC65D, #FF9853, #FF7B52, #FF4C52);
+  }
+  
+  &.policy-gradient {
+    background: linear-gradient(to right, #b8e994, #78e08f, #38ada9, #079992);
+  }
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #909399;
+}
+
+.maps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+  
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+  
+  @media (max-width: 550px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-card {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.map-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.map-card-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.map-card-subtitle {
+  font-size: 13px;
+  color: #909399;
+}
+
+.map-card-body {
+  padding: 0;
+  flex: 1;
+  min-height: 400px;
+}
+
+.map-card-footer {
+  padding: 12px 24px;
+  border-top: 1px solid #f0f2f5;
+  background-color: #fafafa;
+}
+
+.map-info {
+  font-size: 13px;
+  color: #606266;
+  display: flex;
+  align-items: center;
+  
+  &::before {
+    content: 'ℹ️';
+    margin-right: 6px;
+    font-size: 14px;
+  }
+}
+
+.map-chart {
+  width: 100%;
+  height: 450px;
+  border-radius: 0;
+  box-shadow: none;
+  
+  &:hover {
+    box-shadow: none;
+  }
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary-card {
+  background-color: #f9fbfd;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  border-left: 4px solid #409EFF;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #f0f7ff;
+  }
+}
+
+.summary-icon {
+  font-size: 24px;
+  color: #409EFF;
+  padding-top: 4px;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.summary-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #606266;
+}
+
+::v-deep(.el-container){
+    flex-direction: column;
+}
+
+
 </style>

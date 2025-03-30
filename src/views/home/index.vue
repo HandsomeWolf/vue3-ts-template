@@ -11,12 +11,12 @@ import { onMounted, ref } from 'vue'
 import FeedbackForm from './components/FeedbackForm.vue'
 import Footer from './components/Footer.vue'
 import Header from './components/Header.vue'
-import MethaneEmissionsBySectors from './components/MethaneEmissionsBySectors.vue'
-import MethaneEmissionsOverTime from './components/MethaneEmissionsOverTime.vue'
-import PilotProjectMap from './components/PilotProjectMap.vue'
-import PoliciesAndPilotProjects from './components/PoliciesAndPilotProjects.vue'
-import PolicyAmbitionScore from './components/PolicyAmbitionScore.vue'
-import PolicyComprehensiveness from './components/PolicyComprehensiveness.vue'
+import MethaneEmissionsBySectors from './components/tabs/MethaneEmissionsBySectors.vue'
+import MethaneEmissionsOverTime from './components/tabs/MethaneEmissionsOverTime.vue'
+import PilotProjectMap from './components/tabs/PilotProjectMap.vue'
+import PoliciesAndPilotProjects from './components/tabs/PoliciesAndPilotProjects.vue'
+import PolicyAmbitionScore from './components/tabs/PolicyAmbitionScore.vue'
+import PolicyComprehensiveness from './components/tabs/PolicyComprehensiveness.vue'
 // 图表实例
 let usaChart: echarts.ECharts | null = null
 let chinaChart: echarts.ECharts | null = null

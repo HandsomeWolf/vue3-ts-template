@@ -1,12 +1,14 @@
+@use './mixins.scss' as mix;
+
 // 文本省略
 .ellipsis {
-    @include ellipsis(1);
+    @include mix.ellipsis(1);
   }
   .ellipsis-2 {
-    @include ellipsis(2);
+    @include mix.ellipsis(2);
   }
   .ellipsis-3 {
-    @include ellipsis(3);
+    @include mix.ellipsis(3);
   }
 
 // 弹性布局
@@ -14,17 +16,22 @@
     display: flex;
   }
   .flex-column {
-    @include flex(column);
+    @include mix.flex(column);
   }
   .flex-between {
-    @include flex(row, space-between);
+    @include mix.flex(row, space-between);
   }
   .flex-center {
-    @include flex(row, center, center);
+    @include mix.flex(row, center, center);
   }
   .flex-wrap {
     flex-wrap: wrap;
   }
   .flex-grow {
     flex-grow: 1;
+  }
+
+  .main-container {
+    max-width: 1440px;
+    margin: 0 auto;
   }

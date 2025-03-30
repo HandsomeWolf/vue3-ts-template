@@ -12,6 +12,8 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { ElMessage } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
 import VChart from 'vue-echarts'
+import Footer from '../home/components/Footer.vue'
+import Header from '../home/components/Header.vue'
 
 // 定义表格数据类型
 interface TableItem {
@@ -64,9 +66,9 @@ const emissionSourcesOptions = [
 
 // 图表配置
 const chartOption = ref({
-  title: {
-    text: 'Emission Trends Over Time',
-  },
+  // title: {
+  //   text: 'Emission Trends Over Time',
+  // },
   tooltip: {
     trigger: 'axis',
   },
@@ -185,78 +187,130 @@ function handleDownload() {
   // downloadLink.click()
   // document.body.removeChild(downloadLink)
 }
-
+// 下载数据
+function downloadData() {
+  // 调用后台接口下载数据
+  ElMessageBox.confirm(
+    'This will reset all chart data to default settings. Continue?',
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      ElMessage({
+        type: 'success',
+        message: '数据下载请求已发送',
+      })
+    })
+    .catch(() => {
+      // 用户取消下载
+    })
+}
 onMounted(() => {
   fetchData()
 })
 </script>
 
 <template>
-  <div class="emission-monitoring-container">
-    <!-- 筛选栏 -->
-    <div class="filter-section">
-      <el-form :inline="true" :model="filterForm" class="filter-form">
-        <el-form-item label="Country">
-          <el-select v-model="filterForm.country" placeholder="Select Country" clearable @change="handleFilterChange">
-            <el-option v-for="item in countryOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Jurisdiction">
-          <el-select v-model="filterForm.jurisdiction" placeholder="Select Jurisdiction" clearable @change="handleFilterChange">
-            <el-option v-for="item in jurisdictionOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Emission Sources">
-          <el-select v-model="filterForm.emissionSources" multiple placeholder="Select Emission Sources" @change="handleFilterChange">
-            <el-option v-for="item in emissionSourcesOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-    </div>
+  <div class="common-layout">
+    <el-container>
+      <Header />
+      <el-main>
+        <div class="emission-monitoring-container main-container">
+          <!-- 筛选栏 -->
+          <div class="filter-section">
+            <el-form :inline="true" :model="filterForm" class="filter-form">
+              <el-form-item label="Country" style="width: 200px">
+                <el-select v-model="filterForm.country" placeholder="Select Country" clearable @change="handleFilterChange">
+                  <el-option v-for="item in countryOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="Jurisdiction" style="width: 300px">
+                <el-select v-model="filterForm.jurisdiction" placeholder="Select Jurisdiction" clearable @change="handleFilterChange">
+                  <el-option v-for="item in jurisdictionOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="Emission Sources" style="max-width: 550px;min-width: 340px">
+                <el-select v-model="filterForm.emissionSources" multiple placeholder="Select Emission Sources" @change="handleFilterChange">
+                  <el-option v-for="item in emissionSourcesOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="handleFilterChange">
+                  Query
+                </el-button>
+                <DownloadDataButton :on-click="downloadData" label="Download data" />
+              </el-form-item>
+            </el-form>
+          </div>
 
-    <!-- 折线图 -->
-    <div class="chart-section">
-      <div class="chart-title">
-        Emission Trends
-      </div>
-      <div class="chart-container">
-        <VChart class="chart" :option="chartOption" autoresize />
-      </div>
-    </div>
+          <!-- 折线图 -->
+          <div class="chart-section">
+            <div class="chart-title">
+              Emission Trends
+            </div>
+            <div class="chart-container">
+              <VChart class="chart" :option="chartOption" autoresize />
+            </div>
+          </div>
 
-    <!-- 数据表格 -->
-    <div class="table-section">
-      <div class="table-header">
-        <div class="table-title">
-          Emission Data
+          <!-- 数据表格 -->
+          <div class="table-section">
+            <div class="table-header">
+              <div class="table-title">
+                Emission Data
+              </div>
+              <el-button type="primary" @click="handleDownload">
+                Download Data
+              </el-button>
+            </div>
+            <el-table :data="tableData" border style="width: 100%" height="400">
+              <el-table-column prop="date" label="Date" />
+              <el-table-column prop="country" label="Country" />
+              <el-table-column prop="jurisdiction" label="Jurisdiction" />
+              <el-table-column prop="emissionSource" label="Emission Source" />
+              <el-table-column prop="value" label="Value" />
+            </el-table>
+            <el-pagination
+              v-model:current-page="currentPage"
+              v-model:page-size="pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="total"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
         </div>
-        <el-button type="primary" @click="handleDownload">
-          Download Data
-        </el-button>
-      </div>
-      <el-table :data="tableData" border style="width: 100%" height="400">
-        <el-table-column prop="date" label="Date" />
-        <el-table-column prop="country" label="Country" />
-        <el-table-column prop="jurisdiction" label="Jurisdiction" />
-        <el-table-column prop="emissionSource" label="Emission Source" />
-        <el-table-column prop="value" label="Value" />
-      </el-table>
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+      </el-main>
+      <Footer />
+    </el-container>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.common-layout {
+  background-color: #f9fbfd;
+  min-height: 100vh;
+}
+
+.el-main {
+  padding: 30px;
+}
+
+::v-deep(.el-header),
+::v-deep(.el-footer) {
+  height: auto;
+}
+
+::v-deep(.el-container) {
+  flex-direction: column;
+}
+
 .emission-monitoring-container {
-  padding: 20px;
 
   .filter-section {
     background-color: #f5f7fa;
@@ -311,5 +365,9 @@ onMounted(() => {
       justify-content: flex-end;
     }
   }
+}
+
+::v-deep(.el-form-item){
+  margin-bottom: 0;
 }
 </style>

@@ -1,6 +1,11 @@
 <script setup lang='ts'>
 import { InfoFilled } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+// 获取路由实例和当前路由
+const router = useRouter()
+const route = useRoute()
 
 // 展开/收起部门信息
 const showSectorInfo = ref(false)
@@ -16,33 +21,93 @@ const sectorList = [
 ]
 const sectorColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#8B5CF6', '#06b6d4', '#d946ef']
 
+// 导航选项
+const navLinks = [
+  { name: 'Interactive Maps', path: '/' },
+  { name: 'Monthly Emission Monitoring', path: '/emission-monitoring' },
+]
+
+// 当前活动的导航项，根据当前路由路径初始化
+const activeNavItem = ref('')
+
+// 在组件挂载时设置当前活动项
+onMounted(() => {
+  // 根据当前路径设置活动项
+  const currentPath = route.path
+  const activeLink = navLinks.find(link => link.path === currentPath)
+  if (activeLink) {
+    activeNavItem.value = activeLink.name
+  }
+  else {
+    // 默认选中第一项
+    activeNavItem.value = navLinks[0].name
+  }
+})
+
 function toggleSectorInfo() {
   showSectorInfo.value = !showSectorInfo.value
+}
+
+// 导航切换函数
+function handleNavigation(path: string, name: string) {
+  // 如果点击当前活动项，添加弹跳效果
+  if (activeNavItem.value === name) {
+    const navItems = document.querySelectorAll('.nav-item')
+    navItems.forEach((item) => {
+      if (item.textContent?.trim() === name) {
+        item.classList.add('pulse-effect')
+        setTimeout(() => {
+          item.classList.remove('pulse-effect')
+        }, 800)
+      }
+    })
+    return
+  }
+
+  activeNavItem.value = name
+  router.push(path)
 }
 </script>
 
 <template>
   <el-header>
-    <h1 class="title">
-      Global Methane Monitor
-    </h1>
-    <div class="description">
-      Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
-    </div>
-
-    <div class="sector-info-container">
-      <div class="sector-header" @click="toggleSectorInfo">
-        <span class="sector-title">Emission Sectors</span>
-        <el-icon class="sector-icon" :class="{ rotate: showSectorInfo }">
-          <InfoFilled />
-        </el-icon>
+    <div class="header-container">
+      <div class="header-content">
+        <h1 class="title">
+          Global Methane Monitor
+        </h1>
+        <div class="description">
+          Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
+        </div>
       </div>
-      <div class="sector-content" :class="{ expanded: showSectorInfo }">
-        <div class="sector-inner">
-          <div class="sector-grid">
-            <div v-for="(sector, index) in sectorList" :key="index" class="sector-card">
-              <div class="sector-color-indicator" :style="{ backgroundColor: sectorColors[index % sectorColors.length] }" />
-              <span>{{ sector.name }}</span>
+
+      <!-- 导航栏 -->
+      <nav class="main-nav">
+        <div
+          v-for="link in navLinks"
+          :key="link.name"
+          class="nav-item"
+          :class="{ active: activeNavItem === link.name }"
+          @click="handleNavigation(link.path, link.name)"
+        >
+          {{ link.name }}
+          <div class="nav-indicator" />
+        </div>
+      </nav>
+      <div class="sector-info-container">
+        <div class="sector-header" @click="toggleSectorInfo">
+          <span class="sector-title">Emission Sectors</span>
+          <el-icon class="sector-icon" :class="{ rotate: showSectorInfo }">
+            <InfoFilled />
+          </el-icon>
+        </div>
+        <div class="sector-content" :class="{ expanded: showSectorInfo }">
+          <div class="sector-inner">
+            <div class="sector-grid">
+              <div v-for="(sector, index) in sectorList" :key="index" class="sector-card">
+                <div class="sector-color-indicator" :style="{ backgroundColor: sectorColors[index % sectorColors.length] }" />
+                <span>{{ sector.name }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -57,6 +122,18 @@ function toggleSectorInfo() {
   background: linear-gradient(to right, #3a8ee6, #5ca9f5);
   color: white;
 
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .header-content {
+    margin-bottom: 25px;
+  }
+
   .title {
     font-size: 32px;
     margin-bottom: 16px;
@@ -66,10 +143,170 @@ function toggleSectorInfo() {
 
   .description {
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     line-height: 1.5;
     max-width: 800px;
     opacity: 0.9;
+  }
+}
+
+/* 导航样式 */
+.main-nav {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  align-self: flex-start;
+  position: relative;
+  margin-bottom: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform-style: preserve-3d;
+  perspective: 800px;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:hover {
+    box-shadow:
+      0 6px 28px rgba(0, 0, 0, 0.2),
+      inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    // transform: translateY(-2px);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      rgba(255, 255, 255, 0.5) 10%,
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 60%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+.nav-item {
+  padding: 12px 22px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  backface-visibility: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    opacity: 0;
+    transform: scale(1.5);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    z-index: -1;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transition: transform 0.8s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  &:hover {
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    &::before {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    &::after {
+      transform: translateX(200%);
+    }
+
+    .nav-indicator {
+      opacity: 0.8;
+      transform: scaleX(0.9);
+    }
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    font-weight: 700;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      inset 0 2px 3px rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    // transform: translateZ(4px);
+
+    &::before {
+      opacity: 1;
+      background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.1) 70%
+      );
+    }
+
+    .nav-indicator {
+      opacity: 1;
+      transform: scaleX(1);
+      box-shadow: 0 1px 8px rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .nav-indicator {
+    position: absolute;
+    bottom: 6px;
+    left: 18%;
+    right: 18%;
+    height: 3px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.7),
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0.7)
+    );
+    border-radius: 3px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+    transform: scaleX(0.6);
   }
 }
 
@@ -216,6 +453,41 @@ function toggleSectorInfo() {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 增加脉冲动画效果 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.pulse-effect {
+  animation: pulse 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .main-nav {
+    width: 100%;
+    overflow-x: auto;
+    padding: 3px;
+  }
+
+  .nav-item {
+    padding: 10px 15px;
+    white-space: nowrap;
+    font-size: 14px;
   }
 }
 </style>

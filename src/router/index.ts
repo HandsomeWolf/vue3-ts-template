@@ -5,6 +5,10 @@ const routes = [
     path: '/',
     component: () => import('@/views/home/index.vue'),
   },
+  {
+    path: '/emission-monitoring',
+    component: () => import('@/views/emission-monitoring/index.vue'),
+  },
 ]
 
 const router = createRouter({

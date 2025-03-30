@@ -668,11 +668,6 @@ onMounted(() => {
   }
 }
 
-.main-container {
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
 .dashboard-header {
   display: flex;
   justify-content: space-between;

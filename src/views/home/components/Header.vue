@@ -12,7 +12,7 @@ const sectorList = [
   { name: 'Livestock' },
   { name: 'Oil and gas exploitation' },
   { name: 'Rice cultivation' },
-  { name: 'Wastewater' }
+  { name: 'Wastewater' },
 ]
 const sectorColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#8B5CF6', '#06b6d4', '#d946ef']
 
@@ -29,17 +29,21 @@ function toggleSectorInfo() {
     <div class="description">
       Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
     </div>
-    
+
     <div class="sector-info-container">
       <div class="sector-header" @click="toggleSectorInfo">
         <span class="sector-title">Emission Sectors</span>
-        <el-icon class="sector-icon" :class="{ rotate: showSectorInfo }"><InfoFilled /></el-icon>
+        <el-icon class="sector-icon" :class="{ rotate: showSectorInfo }">
+          <InfoFilled />
+        </el-icon>
       </div>
       <div class="sector-content" :class="{ expanded: showSectorInfo }">
-        <div class="sector-grid">
-          <div class="sector-card" v-for="(sector, index) in sectorList" :key="index">
-            <div class="sector-color-indicator" :style="{backgroundColor: sectorColors[index % sectorColors.length]}"></div>
-            <span>{{ sector.name }}</span>
+        <div class="sector-inner">
+          <div class="sector-grid">
+            <div v-for="(sector, index) in sectorList" :key="index" class="sector-card">
+              <div class="sector-color-indicator" :style="{ backgroundColor: sectorColors[index % sectorColors.length] }" />
+              <span>{{ sector.name }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -52,14 +56,14 @@ function toggleSectorInfo() {
   padding: 30px 20px;
   background: linear-gradient(to right, #3a8ee6, #5ca9f5);
   color: white;
-  
+
   .title {
     font-size: 32px;
     margin-bottom: 16px;
     font-weight: bold;
     letter-spacing: 0.5px;
   }
-  
+
   .description {
     font-size: 16px;
     margin-bottom: 20px;
@@ -80,7 +84,7 @@ function toggleSectorInfo() {
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.25);
   }
@@ -93,7 +97,7 @@ function toggleSectorInfo() {
   align-items: center;
   cursor: pointer;
   position: relative;
-  
+
   &::after {
     content: 'Click to explore';
     position: absolute;
@@ -103,13 +107,13 @@ function toggleSectorInfo() {
     font-weight: normal;
     letter-spacing: 0.5px;
   }
-  
+
   .sector-title {
     font-weight: 600;
     font-size: 16px;
     display: flex;
     align-items: center;
-    
+
     &::before {
       content: '';
       display: inline-block;
@@ -120,11 +124,11 @@ function toggleSectorInfo() {
       border-radius: 2px;
     }
   }
-  
+
   .sector-icon {
     font-size: 18px;
     transition: transform 0.3s ease;
-    
+
     &.rotate {
       transform: rotate(180deg);
     }
@@ -134,11 +138,25 @@ function toggleSectorInfo() {
 .sector-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.5s ease, padding 0.3s ease;
-  
+  transition: max-height 0.5s ease;
+  padding: 0 15px;
+
+  // 使用内部容器来处理内边距的过渡
+  .sector-inner {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition-delay: 0.05s;
+    padding: 5px 0 15px;
+  }
+
   &.expanded {
     max-height: 600px;
-    padding: 5px 15px 15px;
+
+    .sector-inner {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -146,11 +164,11 @@ function toggleSectorInfo() {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 15px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
-  
+
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
   }
@@ -166,13 +184,13 @@ function toggleSectorInfo() {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   font-weight: 500;
   letter-spacing: 0.3px;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
-  
+
   @for $i from 1 through 8 {
     &:nth-child(#{$i}) {
       animation: fadeIn 0.3s ease forwards;
@@ -180,7 +198,7 @@ function toggleSectorInfo() {
       opacity: 0;
     }
   }
-  
+
   .sector-color-indicator {
     width: 14px;
     height: 14px;

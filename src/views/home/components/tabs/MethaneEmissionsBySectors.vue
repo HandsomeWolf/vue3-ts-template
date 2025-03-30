@@ -4,10 +4,26 @@ import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
 import PieChart from '@/components/echarts/PieChart.vue'
 import { downloadChartAsImage } from '@/utils/echarts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 // 饼图组件ref
 const pieChartRef = ref<any>(null)
+
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 // 表格数据
 const methaneEmissionsBySectorsTableData = ref([
@@ -82,19 +98,29 @@ function downloadPieChartData() {
 
 <template>
   <div class="methane-emissions-by-sectors">
-    <div class="chart-actions">
-      <DownloadChartButton :on-click="downloadPieChart" label="Download chart" />
-      <DownloadDataButton :on-click="downloadPieChartData" label="Download data" />
+    <div class="chart-actions" :class="{ 'mobile-actions': windowWidth <= 768 }">
+      <DownloadChartButton
+        :on-click="downloadPieChart"
+        label="Download chart"
+        :style="{ width: windowWidth <= 576 ? '100%' : 'auto' }"
+      />
+      <DownloadDataButton
+        :on-click="downloadPieChartData"
+        label="Download data"
+        :style="{ width: windowWidth <= 576 ? '100%' : 'auto', marginLeft: windowWidth <= 576 ? '0' : '10px' }"
+      />
     </div>
 
     <div id="pie-chart" class="chart">
       <PieChart ref="pieChartRef" :chart-data="methaneEmissionsBySectorsTableData" />
     </div>
 
-    <el-table :data="methaneEmissionsBySectorsTableData" border style="width: 100%">
-      <el-table-column prop="name" label="Source" width="500" />
-      <el-table-column prop="year" label="2022" />
-    </el-table>
+    <div class="table-container">
+      <el-table :data="methaneEmissionsBySectorsTableData" border style="width: 100%">
+        <el-table-column prop="name" label="Source" min-width="180" />
+        <el-table-column prop="year" label="2022" min-width="80" />
+      </el-table>
+    </div>
   </div>
 </template>
 
@@ -110,6 +136,10 @@ function downloadPieChartData() {
   margin-bottom: 20px;
   background-color: white;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: $breakpoint-xs) {
+    padding: 10px;
+  }
 }
 
 .chart-actions {
@@ -119,10 +149,41 @@ function downloadPieChartData() {
   .el-button {
     margin-left: 10px;
   }
+
+  &.mobile-actions {
+    text-align: left;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .el-button {
+      margin-left: 0;
+      flex: 1;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    &.mobile-actions {
+      flex-direction: column;
+
+      .el-button {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+    }
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 15px;
 }
 
 :deep(.el-table) {
-  margin-top: 15px;
+  margin-top: 5px;
   margin-bottom: 15px;
   border-radius: 8px;
   overflow: hidden;
@@ -131,6 +192,13 @@ function downloadPieChartData() {
     background-color: #f5f7fa;
     color: #606266;
     font-weight: bold;
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .cell {
+      padding: 8px;
+      font-size: 12px;
+    }
   }
 }
 </style>

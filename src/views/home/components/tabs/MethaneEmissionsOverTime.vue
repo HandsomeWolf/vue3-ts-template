@@ -5,10 +5,26 @@ import LineChart from '@/components/echarts/LineChart.vue'
 import { downloadChartAsImage } from '@/utils/echarts'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 // 图表引用
 const lineChartRef = ref<any>(null)
+
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 // 表单数据
 const methaneEmissionsOverTimeForm = ref({
@@ -96,25 +112,26 @@ function downloadChartData() {
 
 <template>
   <div class="methane-emissions-over-time">
-    <!-- 表单与下载左右对齐 -->
+    <!-- 表单与下载左右对齐，移动端上下排列 -->
     <el-row :gutter="20">
-      <el-col :span="15">
-        <el-form :inline="true" :model="methaneEmissionsOverTimeForm" class="demo-form-inline">
+      <el-col :xs="24" :sm="24" :md="16" :lg="15" :xl="15">
+        <el-form :inline="windowWidth > 768" :model="methaneEmissionsOverTimeForm" class="demo-form-inline">
           <el-form-item>
             <el-select
               v-model="methaneEmissionsOverTimeForm.totalEmission"
-              placeholder="total emission" style="width: 240px"
+              placeholder="total emission"
+              :style="{ width: windowWidth <= 768 ? '100%' : '240px' }"
               @change="handleTotalEmissionChange"
             >
               <el-option label="total emission" value="totalEmission" />
               <el-option label="emission by sector" value="emissionBySector" />
             </el-select>
           </el-form-item>
-          <el-form-item>
+          <el-form-item v-if="methaneEmissionsOverTimeForm.totalEmission === 'emissionBySector'">
             <el-select
-              v-if="methaneEmissionsOverTimeForm.totalEmission === 'emissionBySector'"
               v-model="methaneEmissionsOverTimeForm.emissionBySector"
-              placeholder="emission by sector" style="width: 240px"
+              placeholder="emission by sector"
+              :style="{ width: windowWidth <= 768 ? '100%' : '240px' }"
             >
               <el-option label="Biomass/biofuel burning" value="Biomass/biofuel burning" />
               <el-option label="Coal exploitation" value="Coal exploitation" />
@@ -128,14 +145,19 @@ function downloadChartData() {
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleMethaneEmissionsOverTimeSubmit">
+            <el-button
+              type="primary"
+              :icon="Search"
+              :style="{ width: windowWidth <= 576 ? '100%' : 'auto' }"
+              @click="handleMethaneEmissionsOverTimeSubmit"
+            >
               Query
             </el-button>
           </el-form-item>
         </el-form>
       </el-col>
-      <el-col :span="9">
-        <div class="chart-actions">
+      <el-col :xs="24" :sm="24" :md="8" :lg="9" :xl="9">
+        <div class="chart-actions" :class="{ 'mobile-actions': windowWidth <= 768 }">
           <DownloadChartButton :on-click="downloadChart" label="Download chart" />
           <DownloadDataButton :on-click="downloadChartData" label="Download data" />
         </div>
@@ -146,21 +168,23 @@ function downloadChartData() {
       <LineChart ref="lineChartRef" :chart-data="lineChartData" />
     </div>
 
-    <el-table :data="methaneEmissionsOverTimeTableData" border style="width: 100%">
-      <el-table-column prop="name" label="name" width="180" />
-      <el-table-column prop="source" label="Source" />
-      <el-table-column prop="1990" label="1990" />
-      <el-table-column prop="1991" label="1991" />
-      <el-table-column prop="1992" label="1992" />
-      <el-table-column prop="1993" label="1993" />
-      <el-table-column prop="1994" label="1994" />
-      <el-table-column prop="1995" label="1995" />
-      <el-table-column prop="1996" label="1996" />
-      <el-table-column prop="1997" label="1997" />
-      <el-table-column prop="1998" label="1998" />
-      <el-table-column prop="1999" label="1999" />
-      <el-table-column prop="2000" label="2000" />
-    </el-table>
+    <div class="table-container">
+      <el-table :data="methaneEmissionsOverTimeTableData" border style="width: 100%">
+        <el-table-column prop="name" label="name" width="180" />
+        <el-table-column prop="source" label="Source" />
+        <el-table-column prop="1990" label="1990" />
+        <el-table-column prop="1991" label="1991" />
+        <el-table-column prop="1992" label="1992" />
+        <el-table-column prop="1993" label="1993" />
+        <el-table-column prop="1994" label="1994" />
+        <el-table-column prop="1995" label="1995" />
+        <el-table-column prop="1996" label="1996" />
+        <el-table-column prop="1997" label="1997" />
+        <el-table-column prop="1998" label="1998" />
+        <el-table-column prop="1999" label="1999" />
+        <el-table-column prop="2000" label="2000" />
+      </el-table>
+    </div>
 
     <div class="remark">
       Data Provided by xxx
@@ -180,6 +204,10 @@ function downloadChartData() {
   margin-bottom: 20px;
   background-color: white;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: $breakpoint-xs) {
+    padding: 10px;
+  }
 }
 
 .chart-actions {
@@ -188,6 +216,30 @@ function downloadChartData() {
 
   .el-button {
     margin-left: 10px;
+  }
+
+  &.mobile-actions {
+    text-align: left;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .el-button {
+      margin-left: 0;
+      flex: 1;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    &.mobile-actions {
+      flex-direction: column;
+
+      .el-button {
+        width: 100%;
+      }
+    }
   }
 }
 
@@ -201,6 +253,40 @@ function downloadChartData() {
   .el-form-item {
     margin-bottom: 10px;
     margin-right: 0;
+
+    @media (max-width: $breakpoint-sm) {
+      width: 100%;
+
+      .el-input, .el-select {
+        width: 100%;
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+
+  @media (max-width: $breakpoint-sm) {
+    // 移动端表格横向滚动优化
+    &:before {
+      content: '← Swipe horizontally to view more data →';
+      display: block;
+      padding: 8px;
+      background-color: #f8f9fa;
+      color: #606266;
+      font-size: 12px;
+      text-align: center;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
   }
 }
 
@@ -214,6 +300,13 @@ function downloadChartData() {
     background-color: #f5f7fa;
     color: #606266;
     font-weight: bold;
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .cell {
+      padding: 8px;
+      font-size: 12px;
+    }
   }
 }
 

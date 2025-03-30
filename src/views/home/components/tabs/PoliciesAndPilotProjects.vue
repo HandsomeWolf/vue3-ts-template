@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="policies-and-pilot-projects">
-    <el-form :inline="true" :model="policiesAndPilotProjectsForm" class="demo-form-inline">
+    <el-form :inline="windowWidth > 768" :model="policiesAndPilotProjectsForm" class="demo-form-inline">
       <el-form-item style="width: 310px">
         <el-input v-model="policiesAndPilotProjectsForm.user" placeholder="Jurisdiction" clearable />
       </el-form-item>
@@ -161,11 +161,20 @@ onBeforeUnmount(() => {
       <el-form-item style="width: 310px">
         <el-input v-model="policiesAndPilotProjectsForm.policy" placeholder="Policy" clearable />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :icon="Search" @click="handlePoliciesAndPilotProjectsSubmit">
+      <el-form-item class="action-buttons" :class="{ 'mobile-buttons': windowWidth <= 768 }">
+        <el-button
+          type="primary"
+          :icon="Search"
+          :style="{ width: windowWidth <= 576 ? '100%' : 'auto' }"
+          @click="handlePoliciesAndPilotProjectsSubmit"
+        >
           Query
         </el-button>
-        <DownloadDataButton :on-click="downloadPolicyAndPilotProjectsData" label="Download" />
+        <DownloadDataButton
+          :on-click="downloadPolicyAndPilotProjectsData"
+          label="Download Data"
+          :style="{ width: windowWidth <= 576 ? '100%' : 'auto', marginLeft: windowWidth <= 576 ? '0' : '10px', marginTop: windowWidth <= 576 ? '20px' : '0' }"
+        />
       </el-form-item>
     </el-form>
 
@@ -198,7 +207,7 @@ onBeforeUnmount(() => {
       <el-table-column prop="address" label="Funding Gap" width="180" />
       <el-table-column prop="address" label="Metrics" width="120" />
       <el-table-column prop="address" label="Notes" width="300" />
-      <el-table-column label="Operation" width="120" align="center" fixed="right">
+      <el-table-column label="Operation" width="120" align="center" :fixed="windowWidth <= 768 ? undefined : 'right' ">
         <template #default="{ row }">
           <el-button
             type="default" size="small"

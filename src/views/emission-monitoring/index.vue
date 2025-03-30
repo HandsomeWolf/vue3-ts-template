@@ -15,7 +15,7 @@ import { ElMessage } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
 import VChart from 'vue-echarts'
 import Footer from '../home/components/Footer.vue'
-import Header from '../home/components/Header.vue'
+import Header from '../home/components/header/index.vue'
 
 // 定义表格数据类型
 interface TableItem {
@@ -198,6 +198,7 @@ const tableData = ref<TableItem[]>([
 // 模拟API请求
 function fetchData() {
   // 模拟API延迟
+  // eslint-disable-next-line no-console
   console.log('TODO: 模拟API请求')
 }
 
@@ -205,11 +206,6 @@ function fetchData() {
 function handleFilterChange() {
   fetchData()
   // 可以发送后端请求，这里先用模拟数据
-}
-
-// 处理下载
-function handleDownload() {
-  ElMessage.success('下载功能已触发，实际下载功能需要根据后端API实现')
 }
 // 下载数据
 function downloadData() {

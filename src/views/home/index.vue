@@ -7,10 +7,10 @@ import {
   Edit,
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import FeedbackForm from './components/FeedbackForm.vue'
 import Footer from './components/Footer.vue'
-import Header from './components/Header.vue'
+import Header from './components/header/index.vue'
 import MethaneEmissionsBySectors from './components/tabs/MethaneEmissionsBySectors.vue'
 import MethaneEmissionsOverTime from './components/tabs/MethaneEmissionsOverTime.vue'
 import PilotProjectMap from './components/tabs/PilotProjectMap.vue'
@@ -79,6 +79,14 @@ const mapTitles: Record<string, { usa: string, china: string }> = {
     usa: 'Strength of policy objectives scores for each state',
     china: 'Policy ambition scores for each province',
   },
+}
+
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
 }
 
 // 初始化页面地图
@@ -362,6 +370,11 @@ function updateChinaMap(value?: string) {
 
 onMounted(() => {
   initMap()
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
@@ -463,7 +476,15 @@ onMounted(() => {
   <FeedbackForm ref="feedbackFormRef" />
 
   <!-- 点击地图的弹窗 -->
-  <el-dialog v-model="mapInfoDialogVisible" :title="mapInfoDialogTitle" width="1000" draggable>
+  <el-dialog
+    v-model="mapInfoDialogVisible"
+    :title="mapInfoDialogTitle"
+    :width="windowWidth <= 768 ? '95%' : '1000'"
+    draggable
+    class="region-details-dialog"
+    top="5vh"
+    :fullscreen="windowWidth <= 576"
+  >
     <el-tabs v-model="mapTabsActive" class="map-tabs">
       <el-tab-pane label="policy comprehensiveness" name="policyComprehensiveness">
         <PolicyComprehensiveness />
@@ -567,7 +588,7 @@ onMounted(() => {
 // }
 
 // 对话框样式优化
-.el-dialog {
+.region-details-dialog {
   border-radius: 8px;
   overflow: hidden;
 
@@ -583,6 +604,29 @@ onMounted(() => {
 
   .el-dialog__body {
     padding: 25px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    .el-dialog__body {
+      padding: 15px;
+    }
+
+    .el-dialog__header {
+      padding: 15px;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .el-dialog__body {
+      padding: 10px;
+      max-height: 85vh;
+    }
+
+    .el-dialog__header {
+      padding: 12px;
+    }
   }
 }
 
@@ -601,6 +645,34 @@ onMounted(() => {
 
   .el-tab-pane {
     padding: 10px 0;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    .el-tabs__item {
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .el-tabs__header {
+      margin-bottom: 15px;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .el-tabs__nav {
+      width: 100%;
+      display: flex;
+    }
+
+    .el-tabs__item {
+      flex: 1;
+      text-align: center;
+      padding: 0 5px;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 

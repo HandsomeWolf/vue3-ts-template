@@ -3,7 +3,7 @@ import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
 import { exportToExcel } from '@/utils'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 // 搜索表单数据
 const policiesAndPilotProjectsForm = ref({
@@ -31,6 +31,9 @@ const currentProjectDetail = ref<{
   link?: string
   [key: string]: any
 }>({})
+
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
 
 // 查询提交
 function handlePoliciesAndPilotProjectsSubmit() {
@@ -119,6 +122,19 @@ function downloadPolicyAndPilotProjectsData() {
     ElMessage.error(`Export failed: ${error.message}`)
   }
 }
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <template>
@@ -195,8 +211,16 @@ function downloadPolicyAndPilotProjectsData() {
     </el-table>
 
     <!-- 项目详情弹窗 -->
-    <el-dialog v-model="projectDetailDialogVisible" title="Project Details" width="700" draggable>
-      <el-descriptions :column="1" border>
+    <el-dialog
+      v-model="projectDetailDialogVisible"
+      title="Project Details"
+      :width="windowWidth <= 768 ? '95%' : '700'"
+      draggable
+      class="project-detail-dialog"
+      top="5vh"
+      :fullscreen="windowWidth <= 576"
+    >
+      <el-descriptions :column="windowWidth <= 576 ? 1 : 1" border>
         <el-descriptions-item label="Project Description">
           {{ currentProjectDetail.description || 'No description available' }}
         </el-descriptions-item>
@@ -249,7 +273,7 @@ function downloadPolicyAndPilotProjectsData() {
   }
 }
 
-:deep(.el-dialog) {
+:deep(.project-detail-dialog) {
   border-radius: 8px;
   overflow: hidden;
 
@@ -265,6 +289,36 @@ function downloadPolicyAndPilotProjectsData() {
 
   .el-dialog__body {
     padding: 25px;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    .el-dialog__body {
+      padding: 15px;
+    }
+
+    .el-dialog__header {
+      padding: 15px;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .el-dialog__body {
+      padding: 10px;
+    }
+
+    .el-dialog__header {
+      padding: 12px;
+    }
+
+    .el-descriptions__label {
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .el-descriptions__content {
+      padding: 10px;
+      font-size: 13px;
+    }
   }
 }
 </style>

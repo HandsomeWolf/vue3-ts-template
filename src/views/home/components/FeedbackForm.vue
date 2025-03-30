@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import type { FormInstance, FormRules } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 const feedbackFormDialogVisible = ref(false)
 // 表单数据
@@ -56,6 +56,22 @@ function showFeedbackDialog() {
   feedbackFormDialogVisible.value = true
 }
 
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
 // 导出方法供父组件使用
 defineExpose({
   showFeedbackDialog,
@@ -64,7 +80,15 @@ defineExpose({
 
 <template>
   <!-- 反馈表单弹出框 -->
-  <el-dialog v-model="feedbackFormDialogVisible" title="Feedback or Request Assistance" width="500" draggable>
+  <el-dialog
+    v-model="feedbackFormDialogVisible"
+    title="Feedback or Request Assistance"
+    :width="windowWidth <= 768 ? '95%' : '500'"
+    draggable
+    class="feedback-dialog"
+    top="5vh"
+    :fullscreen="windowWidth <= 576"
+  >
     <el-form
       ref="formRef"
       :model="feedbackForm"
@@ -117,7 +141,7 @@ defineExpose({
 
 <style lang='scss' scoped>
 // 对话框样式优化
-:deep(.el-dialog) {
+:deep(.feedback-dialog) {
   border-radius: 8px;
   overflow: hidden;
 
@@ -133,6 +157,34 @@ defineExpose({
 
   .el-dialog__body {
     padding: 25px;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    .el-dialog__body {
+      padding: 15px;
+    }
+
+    .el-dialog__header {
+      padding: 15px;
+    }
+
+    .el-form-item__label {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .el-dialog__body {
+      padding: 10px;
+    }
+
+    .el-dialog__header {
+      padding: 12px;
+    }
+
+    .el-form-item {
+      margin-bottom: 15px;
+    }
   }
 }
 </style>

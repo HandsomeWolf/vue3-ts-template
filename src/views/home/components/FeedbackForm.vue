@@ -1,5 +1,6 @@
 <script setup lang='ts'>
-import { ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { reactive, ref } from 'vue'
 
 const feedbackFormDialogVisible = ref(false)
 // 表单数据
@@ -11,16 +12,44 @@ const feedbackForm = ref({
   captcha: '',
 })
 
+// 表单引用
+const formRef = ref<FormInstance>()
+
+// 表单校验规则
+const rules = reactive<FormRules>({
+  name: [
+    { required: true, message: 'Please enter your name', trigger: 'blur' },
+  ],
+  email: [
+    { required: true, message: 'Please enter your email address', trigger: 'blur' },
+    { type: 'email', message: 'Please enter a valid email format', trigger: 'blur' },
+  ],
+  region: [
+    { required: true, message: 'Please select a subject', trigger: 'change' },
+  ],
+  message: [
+    { required: true, message: 'Please enter your message', trigger: 'blur' },
+  ],
+  captcha: [
+    { required: true, message: 'Please enter the verification code', trigger: 'blur' },
+  ],
+})
+
 function handleFeedbackFormSubmit() {
-  console.warn('提交反馈表单')
-  feedbackFormDialogVisible.value = false
-  feedbackForm.value = {
-    name: '',
-    email: '',
-    region: '',
-    message: '',
-    captcha: '',
-  }
+  if (!formRef.value)
+    return
+
+  formRef.value.validate((valid) => {
+    if (valid) {
+      console.warn('Form submitted successfully')
+      feedbackFormDialogVisible.value = false
+      // 重置表单
+      formRef.value?.resetFields()
+    }
+    else {
+      console.error('Form validation failed')
+    }
+  })
 }
 
 function showFeedbackDialog() {
@@ -36,23 +65,30 @@ defineExpose({
 <template>
   <!-- 反馈表单弹出框 -->
   <el-dialog v-model="feedbackFormDialogVisible" title="Feedback or Request Assistance" width="500" draggable>
-    <el-form :model="feedbackForm" label-width="auto" style="max-width: 600px">
-      <el-form-item label="Name">
+    <el-form
+      ref="formRef"
+      :model="feedbackForm"
+      :rules="rules"
+      label-width="auto"
+      status-icon
+      style="max-width: 600px"
+    >
+      <el-form-item label="Name" prop="name">
         <el-input v-model="feedbackForm.name" />
       </el-form-item>
-      <el-form-item label="Email">
+      <el-form-item label="Email" prop="email">
         <el-input v-model="feedbackForm.email" />
       </el-form-item>
-      <el-form-item label="Subject">
-        <el-select v-model="feedbackForm.region" placeholder="please select your zone">
+      <el-form-item label="Subject" prop="region">
+        <el-select v-model="feedbackForm.region" placeholder="please select a subject">
           <el-option label="Feedback" value="1" />
           <el-option label="Contact CCCI" value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="Message">
+      <el-form-item label="Message" prop="message">
         <el-input v-model="feedbackForm.message" type="textarea" />
       </el-form-item>
-      <el-form-item label="CAPTCHA">
+      <el-form-item label="CAPTCHA" prop="captcha">
         <el-row :gutter="10">
           <el-col :span="16">
             <el-input v-model="feedbackForm.captcha" placeholder="Please enter the verification code" />
@@ -68,8 +104,11 @@ defineExpose({
     </el-form>
     <template #footer>
       <div class="dialog-footer">
+        <el-button @click="feedbackFormDialogVisible = false">
+          Cancel
+        </el-button>
         <el-button type="primary" @click="handleFeedbackFormSubmit">
-          Confirm
+          Submit
         </el-button>
       </div>
     </template>

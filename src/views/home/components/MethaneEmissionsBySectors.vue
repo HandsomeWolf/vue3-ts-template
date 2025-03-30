@@ -60,12 +60,12 @@ function downloadPieChart() {
 // 下载饼图数据
 function downloadPieChartData() {
   ElMessageBox.confirm(
-    '确定要下载饼图数据吗？',
-    '提示',
+    'This will reset all filters and data selections. Continue?',
+    'Warning',
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info',
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
     },
   )
     .then(() => {

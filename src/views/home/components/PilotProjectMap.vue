@@ -43,14 +43,14 @@ const usaProjectPoints = [
 
 // 模拟中国项目点位信息
 const chinaProjectPoints = [
-  { name: '北京市生物质能源项目', longitude: 116.4074, latitude: 39.9042, description: '生物质能源转换项目', value: 25 },
-  { name: '北京市垃圾填埋气回收', longitude: 116.2363, latitude: 39.8343, description: '垃圾填埋场甲烷回收利用', value: 22 },
-  { name: '四川省沼气利用工程', longitude: 104.0665, latitude: 30.6598, description: '农村沼气利用减排项目', value: 38 },
-  { name: '四川省畜牧业减排', longitude: 103.7558, latitude: 29.6136, description: '畜牧业甲烷减排项目', value: 33 },
-  { name: '上海市垃圾分类处理', longitude: 121.4737, latitude: 31.2304, description: '城市垃圾分类与甲烷回收', value: 31 },
-  { name: '上海市工业废水处理', longitude: 121.5574, latitude: 31.0449, description: '工业废水处理减少甲烷排放', value: 27 },
-  { name: '广东省畜牧业减排项目', longitude: 113.2644, latitude: 23.1291, description: '畜牧业甲烷捕获与利用', value: 29 },
-  { name: '广东省天然气利用项目', longitude: 114.0579, latitude: 22.5431, description: '天然气替代煤炭清洁能源项目', value: 32 },
+  { name: 'Beijing Biomass Energy Project', longitude: 116.4074, latitude: 39.9042, description: 'Biomass energy conversion project', value: 25 },
+  { name: 'Beijing Landfill Gas Recovery', longitude: 116.2363, latitude: 39.8343, description: 'Methane recovery from landfill sites', value: 22 },
+  { name: 'Sichuan Biogas Utilization Project', longitude: 104.0665, latitude: 30.6598, description: 'Rural biogas utilization for emission reduction', value: 38 },
+  { name: 'Sichuan Livestock Emission Reduction', longitude: 103.7558, latitude: 29.6136, description: 'Livestock methane emission reduction project', value: 33 },
+  { name: 'Shanghai Waste Sorting System', longitude: 121.4737, latitude: 31.2304, description: 'Urban waste sorting and methane recovery', value: 31 },
+  { name: 'Shanghai Industrial Wastewater Treatment', longitude: 121.5574, latitude: 31.0449, description: 'Industrial wastewater treatment to reduce methane emissions', value: 27 },
+  { name: 'Guangdong Livestock Emission Project', longitude: 113.2644, latitude: 23.1291, description: 'Livestock methane capture and utilization', value: 29 },
+  { name: 'Guangdong Natural Gas Project', longitude: 114.0579, latitude: 22.5431, description: 'Natural gas as coal substitute for clean energy', value: 32 },
 ]
 
 // 初始化详细地图
@@ -138,9 +138,9 @@ function initDetailMap() {
               if (params.componentSubType === 'effectScatter' || params.componentSubType === 'scatter') {
                 return `<b>${params.name}</b><br/>
                         ${params.data.description}<br/>
-                        经度: ${params.data.longitude}<br/>
-                        纬度: ${params.data.latitude}<br/>
-                        减排量: ${params.data.value[2]} 千吨`
+                        Longitude: ${params.data.longitude}<br/>
+                        Latitude: ${params.data.latitude}<br/>
+                        Emission Reduction: ${params.data.value[2]} thousand tons`
               }
               return params.name
             },
@@ -294,10 +294,10 @@ defineExpose({
   <div class="pilot-project-map-container">
     <div class="map-header">
       <h4 class="map-title">
-        {{ regionName }} 项目分布地图
+        {{ regionName }} Project Distribution Map
       </h4>
       <div class="map-subtitle">
-        显示区域内甲烷减排项目的位置分布
+        Displaying methane reduction projects in the region
       </div>
     </div>
     <div class="detail-map-container">
@@ -305,10 +305,10 @@ defineExpose({
     </div>
     <div class="map-footer">
       <div v-if="projectPoints.length > 0" class="project-count">
-        共显示 {{ projectPoints.length }} 个项目
+        Showing {{ projectPoints.length }} projects
       </div>
       <div v-else class="no-projects">
-        该区域暂无项目数据
+        No project data available for this region
       </div>
     </div>
   </div>

@@ -73,12 +73,12 @@ function downloadChart() {
 function downloadChartData() {
   // 调用后台接口下载数据
   ElMessageBox.confirm(
-    '确定要下载图表数据吗？',
-    '提示',
+    'This will reset all chart data to default settings. Continue?',
+    'Warning',
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info',
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
     },
   )
     .then(() => {

@@ -170,7 +170,7 @@ function updateUSAMap(value?: string) {
       inRange: {
         color: colorScheme,
       },
-      text: ['高', '低'],
+      text: ['High', 'Low'],
       calculable: true,
       show: value !== '0',
       textStyle: {
@@ -290,7 +290,7 @@ function updateChinaMap(value?: string) {
       inRange: {
         color: colorScheme,
       },
-      text: ['高', '低'],
+      text: ['High', 'Low'],
       calculable: true,
       show: value !== '0',
       textStyle: {

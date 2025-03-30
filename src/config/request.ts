@@ -22,6 +22,6 @@ export const CACHE_CONFIG = {
 // 加载配置
 export const LOADING_CONFIG = {
   lock: true,
-  text: '加载中...',
+  text: 'Loading...',
   background: 'rgba(0, 0, 0, 0.7)',
 }

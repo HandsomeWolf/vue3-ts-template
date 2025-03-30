@@ -1,37 +1,35 @@
 <script setup lang='ts'>
 import chinaJson from '@/assets/GEOJSON/china.json'
 import usaJson from '@/assets/GEOJSON/USA.json'
-import { chinaEmissionsData, chinaPolicyScoreData, emissionsData, policyScoreData } from '@/mock'
-import { exportToExcel } from '@/utils'
-import { downloadChartAsImage } from '@/utils/echarts'
-import {
-  Edit,
-    InfoFilled
-} from '@element-plus/icons-vue'
-import * as echarts from 'echarts'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { nextTick, onMounted, ref } from 'vue'
-// 引入自定义图表组件
 import DownloadChartButton from '@/components/echarts/DownloadChartButton.vue'
 import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
 import LineChart from '@/components/echarts/LineChart.vue'
 import PieChart from '@/components/echarts/PieChart.vue'
 import { COLOR_SCHEMES } from '@/constants/echarts'
-import Header from './components/Header.vue'
+import { chinaEmissionsData, chinaPolicyScoreData, emissionsData, policyScoreData } from '@/mock'
+import { exportToExcel } from '@/utils'
+import { downloadChartAsImage } from '@/utils/echarts'
+import {
+  Edit,
+} from '@element-plus/icons-vue'
+import * as echarts from 'echarts'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { nextTick, onMounted, ref } from 'vue'
+import FeedbackForm from './components/FeedbackForm.vue'
 import Footer from './components/Footer.vue'
+import Header from './components/Header.vue'
 // 图表实例
 let usaChart: echarts.ECharts | null = null
 let chinaChart: echarts.ECharts | null = null
 
-// VChart组件ref
+// 线图组件ref
 const lineChartRef = ref<any>(null)
+// 饼图组件ref
+const pieChartRef = ref<any>(null)
 
 // 图表配置选项
 const usaMapOption = ref({})
 const chinaMapOption = ref({})
-
-// 饼图配置选项
-const pieChartRef = ref<any>(null)
 
 // 弹窗，开始{
 
@@ -41,13 +39,13 @@ const mapInfoDialogTitle = ref('')
 
 // 点击更多的弹窗
 const projectDetailDialogVisible = ref(false)
-const currentProjectDetail = ref<{ 
-  name?: string; 
-  address?: string;
-  description?: string;
-  agencies?: string;
-  link?: string;
-  [key: string]: any;
+const currentProjectDetail = ref<{
+  name?: string
+  address?: string
+  description?: string
+  agencies?: string
+  link?: string
+  [key: string]: any
 }>({})
 
 // 选项卡
@@ -136,7 +134,6 @@ const methaneEmissionsBySectorsTableData = ref([
   },
 ])
 
-
 // 选项卡5
 const policyAndPilotProjectsTableData = ref([
   {
@@ -171,52 +168,76 @@ function downloadPolicyAndPilotProjectsData() {
       name: 'Methane Mitigation/Utilization Amount',
       description: 'Project Description',
       agencies: 'Implementing Agencies',
-      link: 'Link'
+      link: 'Link',
     }
-    
+
     // 为address字段创建多个映射
     const repeatedFields = [
-      'Jurisdiction', 'Specific Location', 'Latitude', 'Longitude', 'Country', 'Continent',
-      'Sector', 'Focus', 'Goal', 'Government Partners', 'Start Time',
-      'End Time', 'Project Status', 'Federal/Central', 'State/Province',
-      'Local', 'Private', 'Other', 'Funding Appropriation Status',
-      'Funding Sources as Listed', 'Cost', 'Funding Gap', 'Metrics', 'Notes'
+      'Jurisdiction',
+      'Specific Location',
+      'Latitude',
+      'Longitude',
+      'Country',
+      'Continent',
+      'Sector',
+      'Focus',
+      'Goal',
+      'Government Partners',
+      'Start Time',
+      'End Time',
+      'Project Status',
+      'Federal/Central',
+      'State/Province',
+      'Local',
+      'Private',
+      'Other',
+      'Funding Appropriation Status',
+      'Funding Sources as Listed',
+      'Cost',
+      'Funding Gap',
+      'Metrics',
+      'Notes',
     ]
-    
+
     // 准备导出数据
-    const exportData = policyAndPilotProjectsTableData.value.map(item => {
+    const exportData = policyAndPilotProjectsTableData.value.map((item) => {
       // 创建一个导出对象
       const exportItem: Record<string, any> = {}
-      
+
       // 添加基本字段
-      if (item.name) exportItem['Methane Mitigation/Utilization Amount'] = item.name
-      
+      if (item.name)
+        exportItem['Methane Mitigation/Utilization Amount'] = item.name
+
       // 针对详情字段进行处理
-      const rowWithDetails = item as { 
-        name: string; 
-        address: string; 
-        description?: string;
-        agencies?: string;
-        link?: string;
+      const rowWithDetails = item as {
+        name: string
+        address: string
+        description?: string
+        agencies?: string
+        link?: string
       }
-      
-      if (rowWithDetails.description) exportItem['Project Description'] = rowWithDetails.description
-      if (rowWithDetails.agencies) exportItem['Implementing Agencies'] = rowWithDetails.agencies
-      if (rowWithDetails.link) exportItem['Link'] = rowWithDetails.link
-      
+
+      if (rowWithDetails.description)
+        exportItem['Project Description'] = rowWithDetails.description
+      if (rowWithDetails.agencies)
+        exportItem['Implementing Agencies'] = rowWithDetails.agencies
+      if (rowWithDetails.link)
+        exportItem.Link = rowWithDetails.link
+
       // 对address字段进行多重映射
       if (item.address) {
-        repeatedFields.forEach(field => {
+        repeatedFields.forEach((field) => {
           exportItem[field] = item.address
         })
       }
-      
+
       return exportItem
     })
-    
+
     // 导出到Excel
     exportToExcel(exportData, 'policies-and-projects', 'Policies and Projects')
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('Export failed:', error)
     ElMessage.error(`Export failed: ${error.message}`)
   }
@@ -224,7 +245,7 @@ function downloadPolicyAndPilotProjectsData() {
 
 // 选项卡6
 const detailMapRef = ref<any>(null)
-    const detailMapOption = ref({})
+const detailMapOption = ref({})
 
 // 初始化详细下钻地区地图
 function initDetailMap(mapName: string, country: string) {
@@ -232,90 +253,95 @@ function initDetailMap(mapName: string, country: string) {
   nextTick(() => {
     // 设置当前地图名称
     currentDetailMapName.value = mapName
-    
+
     // 根据国家和地区名称确定显示哪些点位
     if (country === 'usa') {
-      projectPoints.value = usaProjectPoints.filter(point => {
+      projectPoints.value = usaProjectPoints.filter((point) => {
         // 这里筛选属于当前州的点位
-        return point.name.includes(mapName);
-      });
-    } else if (country === 'china') {
-      projectPoints.value = chinaProjectPoints.filter(point => {
-        // 筛选属于当前省份的点位
-        return point.name.includes(mapName);
-      });
-    } else {
-      projectPoints.value = [];
+        return point.name.includes(mapName)
+      })
     }
-    
+    else if (country === 'china') {
+      projectPoints.value = chinaProjectPoints.filter((point) => {
+        // 筛选属于当前省份的点位
+        return point.name.includes(mapName)
+      })
+    }
+    else {
+      projectPoints.value = []
+    }
+
     // 模拟获取特定州或省的地图数据
     // 实际项目中应从API获取或使用预先准备好的地图数据
     // 这里为演示，我们提取GeoJSON中该州/省的特定Feature
-    let stateFeature = null;
-    let mapJsonData = null;
-    
+    let stateFeature = null
+    let mapJsonData = null
+
     if (country === 'usa') {
       // 从美国地图中找到对应的州
-      stateFeature = usaJson.features.find(feature => feature.properties.name === mapName);
+      stateFeature = usaJson.features.find(feature => feature.properties.name === mapName)
       if (stateFeature) {
         // 创建新的GeoJSON对象，只包含该州的feature
         mapJsonData = {
           type: 'FeatureCollection',
-          features: [stateFeature]
-        };
-      } else {
-        console.error(`未找到州: ${mapName}`);
-        mapJsonData = {
-          type: 'FeatureCollection', 
-          features: []
-        };
+          features: [stateFeature],
+        }
       }
-    } else if (country === 'china') {
+      else {
+        console.error(`未找到州: ${mapName}`)
+        mapJsonData = {
+          type: 'FeatureCollection',
+          features: [],
+        }
+      }
+    }
+    else if (country === 'china') {
       // 从中国地图中找到对应的省
-      stateFeature = chinaJson.features.find(feature => feature.properties.name === mapName);
+      stateFeature = chinaJson.features.find(feature => feature.properties.name === mapName)
       if (stateFeature) {
         // 创建新的GeoJSON对象，只包含该省的feature
         mapJsonData = {
           type: 'FeatureCollection',
-          features: [stateFeature]
-        };
-      } else {
-        console.error(`未找到省: ${mapName}`);
+          features: [stateFeature],
+        }
+      }
+      else {
+        console.error(`未找到省: ${mapName}`)
         mapJsonData = {
-          type: 'FeatureCollection', 
-          features: []
-        };
+          type: 'FeatureCollection',
+          features: [],
+        }
       }
     }
-    
+
     // 注册地图
     if (mapJsonData && mapJsonData.features.length > 0) {
       try {
-        echarts.registerMap(mapName, mapJsonData as any);
-        
+        echarts.registerMap(mapName, mapJsonData as any)
+
         // 创建地图配置
         const option = {
           backgroundColor: '#ffffff',
           tooltip: {
             trigger: 'item',
-            formatter: function(params: any) {
+            formatter(params: any) {
               if (params.componentSubType === 'effectScatter') {
                 return `<b>${params.name}</b><br/>
                         ${params.data.description}<br/>
                         经度: ${params.data.longitude}<br/>
                         纬度: ${params.data.latitude}<br/>
-                        减排量: ${params.data.value[2]} 千吨`;
+                        减排量: ${params.data.value[2]} 千吨`
               }
-              return params.name;
-            }
+              return params.name
+            },
           },
           visualMap: {
             show: false,
             min: 0,
             max: 50,
             inRange: {
-              color: ['#FFC65D', '#FF9853', '#FF7B52', '#FF4C52']
-            }
+              color: ['#FFC65D', '#FF9853', '#FF7B52', '#FF4C52'],
+            },
           },
           series: [
             {
@@ -325,26 +351,26 @@ function initDetailMap(mapName: string, country: string) {
               roam: true,
               label: {
                 show: true,
-                fontSize: 10
+                fontSize: 10,
               },
               emphasis: {
                 label: {
                   show: true,
                   fontSize: 12,
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 },
                 itemStyle: {
-                  areaColor: '#e6f7ff'
-                }
+                  areaColor: '#e6f7ff',
+                },
               },
               select: {
-                disabled: true
+                disabled: true,
               },
               itemStyle: {
                 areaColor: '#f3f3f3',
-                borderColor: '#999'
+                borderColor: '#999',
               },
-              data: []
+              data: [],
             },
             {
               name: '项目位置',
@@ -353,56 +379,58 @@ function initDetailMap(mapName: string, country: string) {
               data: projectPoints.value.map(point => ({
                 name: point.name,
                 value: [point.longitude, point.latitude, point.value],
-                description: point.description
+                description: point.description,
               })),
-              symbolSize: function(val: any) {
-                return val[2] / 3 + 12;
+              symbolSize(val: any) {
+                return val[2] / 3 + 12
               },
               showEffectOn: 'render',
               rippleEffect: {
-                brushType: 'stroke'
+                brushType: 'stroke',
               },
               hoverAnimation: true,
               itemStyle: {
                 color: '#ff4c52',
                 shadowBlur: 10,
-                shadowColor: '#333'
+                shadowColor: '#333',
               },
-              zlevel: 1
-            }
-          ]
-        };
-        
+              zlevel: 1,
+            },
+          ],
+        }
+
         // 设置图表选项
-        detailMapOption.value = option;
-        
+        detailMapOption.value = option
+
         // 确保图表已渲染并更新
         nextTick(() => {
           if (detailMapRef.value && detailMapRef.value.chart) {
-            detailMapRef.value.chart.setOption(option, true);
+            detailMapRef.value.chart.setOption(option, true)
           }
-        });
-      } catch (error) {
-        console.error('地图注册或设置失败:', error);
+        })
       }
-    } else {
-      console.warn(`无法为 ${mapName} 加载地图数据`);
-      
+      catch (error) {
+        console.error('地图注册或设置失败:', error)
+      }
+    }
+    else {
+      console.warn(`无法为 ${mapName} 加载地图数据`)
+
       // 创建备用地图显示
       const option = {
         backgroundColor: '#ffffff',
-        series: []
-      };
-      
-      detailMapOption.value = option;
-      
+        series: [],
+      }
+
+      detailMapOption.value = option
+
       nextTick(() => {
         if (detailMapRef.value && detailMapRef.value.chart) {
-          detailMapRef.value.chart.setOption(option, true);
+          detailMapRef.value.chart.setOption(option, true)
         }
-      });
+      })
     }
-  });
+  })
 }
 // 定义地区地图和坐标点数据
 const currentDetailMapName = ref('')
@@ -443,51 +471,38 @@ function showStateDetails(name: string, country: string) {
   else if (country === 'china') {
     // 加载中国数据
   }
-  
+
   // 初始化详细地图
   initDetailMap(name, country)
 }
 
 // 弹窗，结束}
 
-// 反馈表单弹窗，开始{
-const feedbackFormDialogVisible = ref(false)
-// 表单数据
-const feedbackForm = ref({
-  name: '',
-  email: '',
-  region: '',
-  message: '',
-  captcha: '',
-})
+// 反馈表单引用
+const feedbackFormRef = ref<InstanceType<typeof FeedbackForm> | null>(null)
 
-function handleFeedbackFormSubmit() {
-  console.log('handleFeedbackFormSubmit')
-}
-
+// 处理反馈按钮点击
 function handleFeedbackClick() {
-  feedbackFormDialogVisible.value = true
+  feedbackFormRef.value?.showFeedbackDialog()
 }
-
-// 反馈表单弹窗，结束}
 
 // 切换地图数据源
 const dataSources = ref('')
 
 // 标题的数据，便于重用
-const mapTitles: Record<string, { usa: string; china: string }> = {
+const mapTitles: Record<string, { usa: string, china: string }> = {
   default: {
     usa: 'United States',
-    china: 'China'
+    china: 'China',
   },
-  '1': {
+  1: {
     usa: 'Total methane emissions by state in 2022',
-    china: 'Total methane emissions by province in 2022'
+    china: 'Total methane emissions by province in 2022',
   },
-  '2': {
+  2: {
     usa: 'Strength of policy objectives scores for each state',
-    china: 'Policy ambition scores for each province'
-  }
+    china: 'Policy ambition scores for each province',
+  },
 }
 
 // 初始化页面地图
@@ -584,22 +599,22 @@ function updateUSAMap(value?: string) {
         type: 'map',
         roam: true,
         map: 'USA',
-          label: {
-            show: true,
-          fontSize: 8
-          },
+        label: {
+          show: true,
+          fontSize: 8,
+        },
         emphasis: {
           label: {
             show: true,
             fontSize: 10,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           },
           itemStyle: {
-            areaColor: '#e6f7ff'
-          }
+            areaColor: '#e6f7ff',
+          },
         },
         select: {
-          disabled: true
+          disabled: true,
         },
         data: mapData,
       },
@@ -680,22 +695,22 @@ function updateChinaMap(value?: string) {
         type: 'map',
         map: 'China',
         roam: true,
-          label: {
-            show: true,
-          fontSize: 8
-          },
+        label: {
+          show: true,
+          fontSize: 8,
+        },
         emphasis: {
           label: {
             show: true,
             fontSize: 10,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           },
           itemStyle: {
-            areaColor: '#e6f7ff'
-          }
+            areaColor: '#e6f7ff',
+          },
         },
         select: {
-          disabled: true
+          disabled: true,
         },
         data: mapData,
       },
@@ -721,8 +736,6 @@ function updateChinaMap(value?: string) {
   }
 }
 
-
-
 onMounted(() => {
   initMap()
 })
@@ -739,10 +752,12 @@ function downloadEchartsImage(chartRef: any, filename: string, backgroundColor: 
     const chartInstance = chartRef.value.getChartInstance()
     if (chartInstance) {
       downloadChartAsImage(chartInstance, filename, backgroundColor)
-    } else {
+    }
+    else {
       ElMessage.warning('无法获取图表实例')
     }
-  } else {
+  }
+  else {
     ElMessage.warning('无法获取图表组件')
   }
 }
@@ -785,7 +800,7 @@ function downloadPieChartData() {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'info',
-    }
+    },
   )
     .then(() => {
       ElMessage({
@@ -797,54 +812,34 @@ function downloadPieChartData() {
       // 用户取消下载
     })
 }
-
-const showSectorInfo = ref(false)
-const sectorList = [
-  { name: 'Biomass/biofuels burning' },
-  { name: 'Coal exploitation' },
-  { name: 'Fossil Energy Combustion' },
-  { name: 'Landfills' },
-  { name: 'Livestock' },
-  { name: 'Oil and gas exploitation' },
-  { name: 'Rice cultivation' },
-  { name: 'Wastewater' }
-]
-const sectorColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#8B5CF6', '#06b6d4', '#d946ef']
-
-function toggleSectorInfo() {
-  showSectorInfo.value = !showSectorInfo.value
-}
-
 </script>
 
 <template>
   <div class="common-layout">
     <el-container>
-        <Header />
+      <Header />
       <el-main>
         <div class="main-container">
           <div class="dashboard-header">
-            <h2 class="dashboard-title">Interactive Maps</h2>
+            <h2 class="dashboard-title">
+              Interactive Maps
+            </h2>
             <div class="dashboard-controls">
-        <el-select
-                v-model="dataSources"
-          clearable
-                placeholder="Select Data to Display"
-                class="data-select"
-          @change="handleUpdateMapChange"
-        >
-          <el-option
-                  label="Total Emissions Data"
-            value="1"
-          />
-          <el-option
-                  label="Policy Ambition Scores"
-            value="2"
-          />
-        </el-select>
-              <div class="dashboard-legend" v-if="dataSources">
-                <div class="legend-title">{{ dataSources === '1' ? 'Emissions Level' : 'Policy Score' }}</div>
-                <div class="legend-gradient" :class="{'emissions-gradient': dataSources === '1', 'policy-gradient': dataSources === '2'}"></div>
+              <el-select
+                v-model="dataSources" clearable placeholder="Select Data to Display"
+                class="data-select" @change="handleUpdateMapChange"
+              >
+                <el-option label="Total Emissions Data" value="1" />
+                <el-option label="Policy Ambition Scores" value="2" />
+              </el-select>
+              <div v-if="dataSources" class="dashboard-legend">
+                <div class="legend-title">
+                  {{ dataSources === '1' ? 'Emissions Level' : 'Policy Score' }}
+                </div>
+                <div
+                  class="legend-gradient"
+                  :class="{ 'emissions-gradient': dataSources === '1', 'policy-gradient': dataSources === '2' }"
+                />
                 <div class="legend-labels">
                   <span>{{ dataSources === '1' ? 'Low' : 'Weak' }}</span>
                   <span>{{ dataSources === '1' ? 'High' : 'Strong' }}</span>
@@ -856,39 +851,65 @@ function toggleSectorInfo() {
           <div class="maps-container">
             <div class="map-card">
               <div class="map-card-header">
-                <h3 class="map-card-title">{{ dataSources ? mapTitles[dataSources].usa : mapTitles.default.usa }}</h3>
-                <div class="map-card-subtitle" v-if="dataSources === '1'">Methane emissions in thousand tons</div>
-                <div class="map-card-subtitle" v-else-if="dataSources === '2'">Score out of 100 points</div>
-            </div>
+                <h3 class="map-card-title">
+                  {{ dataSources ? mapTitles[dataSources].usa
+                    : mapTitles.default.usa }}
+                </h3>
+                <div v-if="dataSources === '1'" class="map-card-subtitle">
+                  Methane emissions in thousand
+                  tons
+                </div>
+                <div v-else-if="dataSources === '2'" class="map-card-subtitle">
+                  Score out of 100 points
+                </div>
+              </div>
               <div class="map-card-body">
-            <VChart id="usa-map" class="map-chart usa-map" :option="usaMapOption" autoresize />
-            </div>
+                <VChart id="usa-map" class="map-chart usa-map" :option="usaMapOption" autoresize />
+              </div>
               <div class="map-card-footer">
-                <div class="map-info">Click on a state to view detailed information</div>
+                <div class="map-info">
+                  Click on a state to view detailed information
+                </div>
               </div>
             </div>
 
             <div class="map-card">
               <div class="map-card-header">
-                <h3 class="map-card-title">{{ dataSources ? mapTitles[dataSources].china : mapTitles.default.china }}</h3>
-                <div class="map-card-subtitle" v-if="dataSources === '1'">Methane emissions in thousand tons</div>
-                <div class="map-card-subtitle" v-else-if="dataSources === '2'">Score out of 100 points</div>
+                <h3 class="map-card-title">
+                  {{ dataSources ? mapTitles[dataSources].china
+                    : mapTitles.default.china }}
+                </h3>
+                <div v-if="dataSources === '1'" class="map-card-subtitle">
+                  Methane emissions in thousand
+                  tons
+                </div>
+                <div v-else-if="dataSources === '2'" class="map-card-subtitle">
+                  Score out of 100 points
+                </div>
               </div>
               <div class="map-card-body">
-            <VChart id="china-map" class="map-chart china-map" :option="chinaMapOption" autoresize />
+                <VChart
+                  id="china-map" class="map-chart china-map" :option="chinaMapOption"
+                  autoresize
+                />
               </div>
               <div class="map-card-footer">
-                <div class="map-info">Click on a province to view detailed information</div>
+                <div class="map-info">
+                  Click on a province to view detailed information
+                </div>
               </div>
             </div>
           </div>
         </div>
       </el-main>
-        <Footer />
+      <Footer />
     </el-container>
   </div>
 
   <el-button class="feedback-btn" type="primary" :icon="Edit" circle @click="handleFeedbackClick" />
+
+  <!-- 反馈表单组件 -->
+  <FeedbackForm ref="feedbackFormRef" />
 
   <!-- 点击地图的弹窗 -->
   <el-dialog v-model="mapInfoDialogVisible" :title="mapInfoDialogTitle" width="1000" draggable>
@@ -963,7 +984,10 @@ function toggleSectorInfo() {
           <el-table-column prop="country" label="Policy Description" width="180" />
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="Policy ambition score and corresponding ranking" name="policyAmbitionScoreAndCorrespondingRanking">
+      <el-tab-pane
+        label="Policy ambition score and corresponding ranking"
+        name="policyAmbitionScoreAndCorrespondingRanking"
+      >
         <el-table :data="policyAmbitionScoreAndCorrespondingRankingTableData" border style="width: 100%">
           <el-table-column prop="name" label="name" width="120" />
           <el-table-column prop="address" label="Total_Policy_Score" />
@@ -977,86 +1001,51 @@ function toggleSectorInfo() {
       <el-tab-pane label="methane emissions over time" name="methaneEmissionsOverTime">
         <!-- 表单与下载左右对齐 -->
         <el-row :gutter="20">
-            <el-col :span="16">
-        <el-form :inline="true" :model="methaneEmissionsOverTimeForm" class="demo-form-inline">
-          <el-form-item>
-            <el-select
-              v-model="methaneEmissionsOverTimeForm.totalEmission"
-              placeholder="total emission"
-              style="width: 240px"
-              @change="handleTotalEmissionChange"
-            >
-              <el-option
-                label="total emission"
-                value="totalEmission"
-              />
-              <el-option
-                label="emission by sector"
-                value="emissionBySector"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-select
-              v-if="methaneEmissionsOverTimeForm.totalEmission === 'emissionBySector'"
-              v-model="methaneEmissionsOverTimeForm.emissionBySector"
-              placeholder="emission by sector"
-              style="width: 240px"
-            >
-              <el-option
-                label="Biomass/biofuel burning"
-                value="Biomass/biofuel burning"
-              />
-              <el-option
-                label="Coal exploitation"
-                value="Coal exploitation"
-              />
-              <el-option
-                label="Fossil energy combustion"
-                value="Fossil energy combustion"
-              />
-              <el-option
-                label="Landfills"
-                value="Landfills"
-              />
-              <el-option
-                label="Livestock"
-                value="Livestock"
-              />
-              <el-option
-                label="Oil&Gas exploitation"
-                value="Oil&Gas exploitation"
-              />
-              <el-option
-                label="Rice cultivation"
-                value="Rice cultivation"
-              />
-              <el-option
-                label="Wastewater"
-                value="Wastewater"
-              />
-            </el-select>
-          </el-form-item>
+          <el-col :span="15">
+            <el-form :inline="true" :model="methaneEmissionsOverTimeForm" class="demo-form-inline">
+              <el-form-item>
+                <el-select
+                  v-model="methaneEmissionsOverTimeForm.totalEmission"
+                  placeholder="total emission" style="width: 240px"
+                  @change="handleTotalEmissionChange"
+                >
+                  <el-option label="total emission" value="totalEmission" />
+                  <el-option label="emission by sector" value="emissionBySector" />
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-select
+                  v-if="methaneEmissionsOverTimeForm.totalEmission === 'emissionBySector'"
+                  v-model="methaneEmissionsOverTimeForm.emissionBySector"
+                  placeholder="emission by sector" style="width: 240px"
+                >
+                  <el-option label="Biomass/biofuel burning" value="Biomass/biofuel burning" />
+                  <el-option label="Coal exploitation" value="Coal exploitation" />
+                  <el-option label="Fossil energy combustion" value="Fossil energy combustion" />
+                  <el-option label="Landfills" value="Landfills" />
+                  <el-option label="Livestock" value="Livestock" />
+                  <el-option label="Oil&Gas exploitation" value="Oil&Gas exploitation" />
+                  <el-option label="Rice cultivation" value="Rice cultivation" />
+                  <el-option label="Wastewater" value="Wastewater" />
+                </el-select>
+              </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" @click="handleMethaneEmissionsOverTimeSubmit">
-              Query
-            </el-button>
-          </el-form-item>
-        </el-form>
-            </el-col>
-            <el-col :span="8">
-        <div class="chart-actions">
-          <DownloadChartButton :onClick="downloadChart" label="Download chart" />
-          <DownloadDataButton :onClick="downloadChartData" label="Download data" />
-        </div>
-            </el-col>
+              <el-form-item>
+                <el-button type="primary" @click="handleMethaneEmissionsOverTimeSubmit">
+                  Query
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-col>
+          <el-col :span="9">
+            <div class="chart-actions">
+              <DownloadChartButton :on-click="downloadChart" label="Download chart" />
+              <DownloadDataButton :on-click="downloadChartData" label="Download data" />
+            </div>
+          </el-col>
         </el-row>
         <div id="line-chart" class="chart">
-          <LineChart 
-            :chart-data="lineChartData" 
-            ref="lineChartRef" 
-          />
+          <LineChart ref="lineChartRef" :chart-data="lineChartData" />
         </div>
         <el-table :data="methaneEmissionsOverTimeTableData" border style="width: 100%">
           <el-table-column prop="name" label="name" width="180" />
@@ -1080,17 +1069,14 @@ function toggleSectorInfo() {
       </el-tab-pane>
       <el-tab-pane label="methane emissions (by sectors)" name="methaneEmissionsBySectors">
         <div class="chart-actions">
-          <DownloadChartButton :onClick="downloadPieChart" label="Download chart" />
-          <DownloadDataButton :onClick="downloadPieChartData" label="Download data" />
+          <DownloadChartButton :on-click="downloadPieChart" label="Download chart" />
+          <DownloadDataButton :on-click="downloadPieChartData" label="Download data" />
         </div>
-        
+
         <div id="pie-chart" class="chart">
-          <PieChart 
-            :chart-data="methaneEmissionsBySectorsTableData" 
-            ref="pieChartRef" 
-          />
+          <PieChart ref="pieChartRef" :chart-data="methaneEmissionsBySectorsTableData" />
         </div>
-        
+
         <el-table :data="methaneEmissionsBySectorsTableData" border style="width: 100%">
           <el-table-column prop="name" label="Source" width="500" />
           <el-table-column prop="year" label="2022" />
@@ -1098,56 +1084,46 @@ function toggleSectorInfo() {
       </el-tab-pane>
 
       <el-tab-pane label="policies and pilot projects" name="policiesAndPilotProjects">
-          <el-form :inline="true" :model="policiesAndPilotProjectsForm" class="demo-form-inline">
-            <el-form-item style="width: 310px">
-              <el-input v-model="policiesAndPilotProjectsForm.user" placeholder="Jurisdiction" clearable />
-            </el-form-item>
-            <el-form-item style="width: 180px">
-              <el-select
-                
-                v-model="policiesAndPilotProjectsForm.region"
-                placeholder="Sectors"
-                clearable
-              >
-                <el-option label="Agriculture" value="Agriculture" />
-                <el-option label="AAAA" value="AAAA" />
-                <el-option label="BBBB" value="BBBB" />
-                <el-option label="CCCC" value="CCCC" />
-              </el-select>
-            </el-form-item>
-            <el-form-item>
-              <el-date-picker
-                v-model="policiesAndPilotProjectsForm.date"
-                range-separator="To"
-                start-placeholder="Start year"
-                end-placeholder="End year"
-                type="yearrange"
-                placeholder="Year"
-                clearable
-              />
-            </el-form-item>
-            <el-form-item  style="width: 310px">
-              <el-input v-model="policiesAndPilotProjectsForm.policy" placeholder="Policy" clearable />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="handlePoliciesAndPilotProjectsSubmit">
-                Query
-              </el-button>
-              <DownloadDataButton :onClick="downloadPolicyAndPilotProjectsData" label="Download" />
-            </el-form-item>
-          </el-form>
+        <el-form :inline="true" :model="policiesAndPilotProjectsForm" class="demo-form-inline">
+          <el-form-item style="width: 310px">
+            <el-input v-model="policiesAndPilotProjectsForm.user" placeholder="Jurisdiction" clearable />
+          </el-form-item>
+          <el-form-item style="width: 180px">
+            <el-select v-model="policiesAndPilotProjectsForm.region" placeholder="Sectors" clearable>
+              <el-option label="Agriculture" value="Agriculture" />
+              <el-option label="AAAA" value="AAAA" />
+              <el-option label="BBBB" value="BBBB" />
+              <el-option label="CCCC" value="CCCC" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-date-picker
+              v-model="policiesAndPilotProjectsForm.date" range-separator="To"
+              start-placeholder="Start year" end-placeholder="End year" type="yearrange"
+              placeholder="Year" clearable
+            />
+          </el-form-item>
+          <el-form-item style="width: 310px">
+            <el-input v-model="policiesAndPilotProjectsForm.policy" placeholder="Policy" clearable />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handlePoliciesAndPilotProjectsSubmit">
+              Query
+            </el-button>
+            <DownloadDataButton :on-click="downloadPolicyAndPilotProjectsData" label="Download" />
+          </el-form-item>
+        </el-form>
         <el-table :data="policyAndPilotProjectsTableData" border style="width: 100%">
-
-            <el-table-column prop="address" label="Jurisdiction" width="200" />
-            <el-table-column prop="address" label="Specific Location" width="200" />
-            <el-table-column prop="address" label="Latitude" width="200" />
-            <el-table-column prop="address" label="Longitude" width="200" />
-            <el-table-column prop="address" label="Country" width="200" />
-            <el-table-column prop="address" label="Continent" width="200" />
-            <el-table-column prop="address" label="Sector" width="200" />
-            <el-table-column prop="address" label="Focus" width="200" />
-            <!-- <el-table-column prop="address" label="Project Description" width="200" /> -->
-            <el-table-column prop="address" label="Goal" width="200" />
+          <el-table-column prop="address" label="Jurisdiction" width="200" />
+          <el-table-column prop="address" label="Specific Location" width="200" />
+          <el-table-column prop="address" label="Latitude" width="200" />
+          <el-table-column prop="address" label="Longitude" width="200" />
+          <el-table-column prop="address" label="Country" width="200" />
+          <el-table-column prop="address" label="Continent" width="200" />
+          <el-table-column prop="address" label="Sector" width="200" />
+          <el-table-column prop="address" label="Focus" width="200" />
+          <!-- <el-table-column prop="address" label="Project Description" width="200" /> -->
+          <el-table-column prop="address" label="Goal" width="200" />
           <el-table-column prop="name" label="Methane Mitigation/Utilization Amount" width="300" />
           <!-- <el-table-column prop="address" label="Implementing Agencies" width="200" /> -->
           <el-table-column prop="address" label="Government Partners" width="200" />
@@ -1168,7 +1144,12 @@ function toggleSectorInfo() {
           <el-table-column prop="address" label="Notes" width="300" />
           <el-table-column label="Operation" width="120" align="center" fixed="right">
             <template #default="{ row }">
-              <el-button type="default" size="small" @click="handlePolicyAndPilotProjectsTableDataMoreClick(row)">View More</el-button>
+              <el-button
+                type="default" size="small"
+                @click="handlePolicyAndPilotProjectsTableDataMoreClick(row)"
+              >
+                View More
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -1177,15 +1158,16 @@ function toggleSectorInfo() {
       <el-tab-pane label="Pilot Project Positioning Map" name="pilotProjectPositioningMap">
         <div class="detail-map-container">
           <div class="map-description">
-            以下地图显示了 <strong>{{ currentDetailMapName }}</strong> 区域的甲烷减排项目分布情况，每个标记点代表一个项目位置。鼠标悬停在标记点上可查看详细信息。
+            以下地图显示了 <strong>{{ currentDetailMapName }}</strong>
+            区域的甲烷减排项目分布情况，每个标记点代表一个项目位置。鼠标悬停在标记点上可查看详细信息。
           </div>
           <div v-if="projectPoints.length > 0" class="detail-map-info">
             该区域共有 <strong>{{ projectPoints.length }}</strong> 个减排项目，总减排量：
             <strong>{{ projectPoints.reduce((sum, point) => sum + point.value, 0) }}</strong> 千吨
           </div>
-          <VChart class="detail-map" :option="detailMapOption" ref="detailMapRef" autoresize />
-          
-          <div class="point-list" v-if="projectPoints.length > 0">
+          <VChart ref="detailMapRef" class="detail-map" :option="detailMapOption" autoresize />
+
+          <div v-if="projectPoints.length > 0" class="point-list">
             <h3>项目列表</h3>
             <el-table :data="projectPoints" border style="width: 100%">
               <el-table-column prop="name" label="项目名称" />
@@ -1203,50 +1185,6 @@ function toggleSectorInfo() {
     </el-tabs>
   </el-dialog>
 
-  <!-- 反馈表单弹出框 -->
-  <el-dialog v-model="feedbackFormDialogVisible" title="Feedback or Request Assistance" width="500" draggable>
-    <el-form :model="feedbackForm" label-width="auto" style="max-width: 600px">
-      <el-form-item label="Name">
-        <el-input v-model="feedbackForm.name" />
-      </el-form-item>
-      <el-form-item label="Email">
-        <el-input v-model="feedbackForm.email" />
-      </el-form-item>
-      <el-form-item label="Subject">
-        <el-select v-model="feedbackForm.region" placeholder="please select your zone">
-          <el-option label="Feedback" value="1" />
-          <el-option label="Contact CCCI" value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Message">
-        <el-input v-model="feedbackForm.message" type="textarea" />
-      </el-form-item>
-      <el-form-item label="CAPTCHA">
-        <el-col :span="10">
-          <el-image style="width: 100px; height: 100px" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" />
-        </el-col>
-        <el-col :span="14">
-          <el-input v-model="feedbackForm.captcha" placeholder="Please enter the verification code" />
-        </el-col>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleFeedbackFormSubmit">
-          Send
-        </el-button>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="mapInfoDialogVisible = false">
-          Cancel
-        </el-button>
-        <el-button type="primary" @click="mapInfoDialogVisible = false">
-          Confirm
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
-
   <!-- 项目详情弹窗 -->
   <el-dialog v-model="projectDetailDialogVisible" title="Project Details" width="700" draggable>
     <el-descriptions :column="1" border>
@@ -1257,7 +1195,7 @@ function toggleSectorInfo() {
         {{ currentProjectDetail.agencies || 'No implementing agencies information available' }}
       </el-descriptions-item>
       <el-descriptions-item label="Link">
-        <a :href="currentProjectDetail.link" target="_blank" v-if="currentProjectDetail.link">
+        <a v-if="currentProjectDetail.link" :href="currentProjectDetail.link" target="_blank">
           {{ currentProjectDetail.link }}
         </a>
         <span v-else>No link available</span>
@@ -1268,77 +1206,75 @@ function toggleSectorInfo() {
 
 <style lang='scss' scoped>
 .common-layout {
-  background-color: #f9fbfd;
-  min-height: 100vh;
+    background-color: #f9fbfd;
+    min-height: 100vh;
 }
 
-
 .el-main {
-  padding: 30px;
-  
-  .el-select {
-    margin-bottom: 20px;
-    width: 200px;
-  }
-  
-  .el-row {
-    margin-bottom: 20px;
-  }
+    padding: 30px;
+
+    .el-select {
+        margin-bottom: 20px;
+        width: 200px;
+    }
+
+    .el-row {
+        margin-bottom: 20px;
+    }
 }
 
 .map-chart {
-  width: 100%;
-  height: 500px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
+    width: 100%;
+    height: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .map-title {
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #333;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
 }
 
 .feedback-btn {
-  position: fixed;
-  right: 25px;
-  bottom: 25px;
-  z-index: 999;
-  width: 50px;
-  height: 50px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 999;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
 }
 
-::v-deep(.el-footer){
-  height: auto;
+::v-deep(.el-footer) {
+    height: auto;
 }
 
-::v-deep(.el-header){
-  height: auto;
+::v-deep(.el-header) {
+    height: auto;
 }
-
 
 .remark {
-  margin-top: 15px;
-  font-size: 13px;
-  color: #909399;
-  font-style: italic;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #909399;
+    font-style: italic;
 }
 
 .chart {
-  border: 1px solid #ebeef5;
+    border: 1px solid #ebeef5;
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -1349,7 +1285,7 @@ function toggleSectorInfo() {
 .chart-actions {
   margin-bottom: 15px;
   text-align: right;
-  
+
   .el-button {
     margin-left: 10px;
   }
@@ -1359,17 +1295,17 @@ function toggleSectorInfo() {
 .el-dialog {
   border-radius: 8px;
   overflow: hidden;
-  
+
   .el-dialog__header {
     padding: 20px;
     background-color: #f5f7fa;
   }
-  
+
   .el-dialog__title {
     font-weight: bold;
     color: #303133;
   }
-  
+
   .el-dialog__body {
     padding: 25px;
   }
@@ -1380,14 +1316,14 @@ function toggleSectorInfo() {
   .el-tabs__header {
     margin-bottom: 20px;
   }
-  
+
   .el-tabs__item {
     padding: 0 20px;
     height: 40px;
     line-height: 40px;
     font-size: 14px;
   }
-  
+
   .el-tab-pane {
     padding: 10px 0;
   }
@@ -1398,13 +1334,13 @@ function toggleSectorInfo() {
   margin-top: 15px;
   border-radius: 8px;
   overflow: hidden;
-  
+
   .el-table__header th {
     background-color: #f5f7fa;
     color: #606266;
     font-weight: bold;
   }
-  
+
   .el-button--small {
     padding: 8px 15px;
   }
@@ -1433,7 +1369,7 @@ function toggleSectorInfo() {
 
 .point-list {
   margin-top: 30px;
-  
+
   h3 {
     font-size: 18px;
     margin-bottom: 15px;
@@ -1459,7 +1395,7 @@ function toggleSectorInfo() {
   border-left: 4px solid #1890ff;
   font-size: 15px;
   line-height: 1.5;
-  
+
   strong {
     color: #1890ff;
   }
@@ -1473,7 +1409,7 @@ function toggleSectorInfo() {
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
-    
+
     .el-form-item {
       margin-bottom: 10px;
       margin-right: 0;
@@ -1487,18 +1423,16 @@ function toggleSectorInfo() {
   overflow: hidden;
   margin-top: 20px;
   border: 1px solid #e4e7ed;
-  
+
   .el-collapse-item__header {
     padding: 0 20px;
     font-weight: bold;
   }
-  
+
   .el-collapse-item__content {
     padding: 15px 20px;
   }
 }
-
-
 
 .main-container {
   max-width: 1440px;
@@ -1510,7 +1444,7 @@ function toggleSectorInfo() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -1523,7 +1457,7 @@ function toggleSectorInfo() {
   color: #2c3e50;
   margin: 0;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -1534,7 +1468,7 @@ function toggleSectorInfo() {
     background-color: #409EFF;
     border-radius: 3px;
   }
-  
+
   @media (max-width: 768px) {
     margin-bottom: 20px;
   }
@@ -1544,7 +1478,7 @@ function toggleSectorInfo() {
   display: flex;
   align-items: center;
   gap: 20px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     flex-direction: column;
@@ -1555,7 +1489,7 @@ function toggleSectorInfo() {
 
 .data-select {
   width: 240px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -1565,7 +1499,7 @@ function toggleSectorInfo() {
   display: flex;
   flex-direction: column;
   min-width: 200px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -1581,11 +1515,11 @@ function toggleSectorInfo() {
   height: 8px;
   border-radius: 4px;
   margin-bottom: 4px;
-  
+
   &.emissions-gradient {
     background: linear-gradient(to right, #FFC65D, #FF9853, #FF7B52, #FF4C52);
   }
-  
+
   &.policy-gradient {
     background: linear-gradient(to right, #b8e994, #78e08f, #38ada9, #079992);
   }
@@ -1603,11 +1537,11 @@ function toggleSectorInfo() {
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: 30px;
   margin-bottom: 40px;
-  
+
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
   }
-  
+
   @media (max-width: 550px) {
     grid-template-columns: 1fr;
   }
@@ -1621,7 +1555,7 @@ function toggleSectorInfo() {
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  
+
   &:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
@@ -1662,7 +1596,7 @@ function toggleSectorInfo() {
   color: #606266;
   display: flex;
   align-items: center;
-  
+
   &::before {
     content: 'ℹ️';
     margin-right: 6px;
@@ -1675,7 +1609,7 @@ function toggleSectorInfo() {
   height: 450px;
   border-radius: 0;
   box-shadow: none;
-  
+
   &:hover {
     box-shadow: none;
   }
@@ -1686,7 +1620,7 @@ function toggleSectorInfo() {
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
   margin-top: 40px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -1701,7 +1635,7 @@ function toggleSectorInfo() {
   border-left: 4px solid #409EFF;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
-  
+
   &:hover {
     background-color: #f0f7ff;
   }
@@ -1734,6 +1668,4 @@ function toggleSectorInfo() {
 ::v-deep(.el-container){
     flex-direction: column;
 }
-
-
 </style>

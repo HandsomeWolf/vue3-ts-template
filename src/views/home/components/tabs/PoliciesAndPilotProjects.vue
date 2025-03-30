@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
 import { exportToExcel } from '@/utils'
+import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
@@ -145,7 +146,7 @@ function downloadPolicyAndPilotProjectsData() {
         <el-input v-model="policiesAndPilotProjectsForm.policy" placeholder="Policy" clearable />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handlePoliciesAndPilotProjectsSubmit">
+        <el-button type="primary" :icon="Search" @click="handlePoliciesAndPilotProjectsSubmit">
           Query
         </el-button>
         <DownloadDataButton :on-click="downloadPolicyAndPilotProjectsData" label="Download" />

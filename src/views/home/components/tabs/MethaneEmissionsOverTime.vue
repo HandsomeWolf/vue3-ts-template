@@ -3,6 +3,7 @@ import DownloadChartButton from '@/components/echarts/DownloadChartButton.vue'
 import DownloadDataButton from '@/components/echarts/DownloadDataButton.vue'
 import LineChart from '@/components/echarts/LineChart.vue'
 import { downloadChartAsImage } from '@/utils/echarts'
+import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 
@@ -127,7 +128,7 @@ function downloadChartData() {
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="handleMethaneEmissionsOverTimeSubmit">
+            <el-button type="primary" :icon="Search" @click="handleMethaneEmissionsOverTimeSubmit">
               Query
             </el-button>
           </el-form-item>

@@ -41,6 +41,7 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     LineChart: typeof import('./../components/echarts/LineChart.vue')['default']
     PieChart: typeof import('./../components/echarts/PieChart.vue')['default']

@@ -1,5 +1,7 @@
 // 定义两种不同的颜色方案
 export const COLOR_SCHEMES = {
-    EMISSIONS: ['#ffedd5', '#fed7aa', '#fb923c', '#ea580c', '#9a3412'], // 橙色到红色
-    POLICY: ['#fef9c3', '#86efac', '#22c55e', '#15803d', '#0ea5e9'], // 黄色到绿色到蓝色
-  }
+  // 排放量颜色方案，橙红渐变色阶
+  EMISSIONS: ['#fffbeb', '#fef3c7', '#fdba74', '#f97316', '#c2410c'],
+  // 政策分数颜色方案，黄绿蓝渐变色阶
+  POLICY: ['#fef9c3', '#d9f99d', '#86efac', '#34d399', '#0891b2'],
+}

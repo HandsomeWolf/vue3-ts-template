@@ -131,7 +131,7 @@ function initDetailMap() {
 
         // 创建地图配置
         const option = {
-          backgroundColor: '#ffffff',
+          backgroundColor: '#f8f9fa',
           tooltip: {
             trigger: 'item',
             formatter(params: any) {
@@ -145,13 +145,21 @@ function initDetailMap() {
               return params.name
             },
             confine: true,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#eee',
+            borderWidth: 1,
+            padding: [10, 15],
+            textStyle: {
+              color: '#333',
+              fontSize: 13,
+            },
           },
           visualMap: {
             show: false,
             min: 0,
             max: 50,
             inRange: {
-              color: ['#FFC65D', '#FF9853', '#FF7B52', '#FF4C52'],
+              color: ['#fffbeb', '#fef3c7', '#fdba74', '#f97316', '#c2410c'],
             },
           },
           geo: {
@@ -160,23 +168,34 @@ function initDetailMap() {
             label: {
               show: true,
               fontSize: 10,
+              color: '#555',
             },
             emphasis: {
               label: {
                 show: true,
                 fontSize: 12,
                 fontWeight: 'bold',
+                color: '#333',
               },
               itemStyle: {
-                areaColor: '#e6f7ff',
+                areaColor: '#e1f0ff',
+                borderColor: '#7bb6ff',
+                borderWidth: 1.5,
+                shadowColor: 'rgba(65, 133, 255, 0.3)',
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
               },
             },
             select: {
               disabled: true,
             },
             itemStyle: {
-              areaColor: '#f3f3f3',
-              borderColor: '#999',
+              areaColor: '#f0f2f5',
+              borderColor: '#cfd7e7',
+              borderWidth: 0.5,
+              shadowColor: 'rgba(0, 0, 0, 0.1)',
+              shadowBlur: 5,
             },
             zoom: 1.2,
           },
@@ -195,15 +214,15 @@ function initDetailMap() {
               symbolSize: 26,
               symbol: 'path://M12,0C7.4,0,3.7,3.7,3.7,8.3c0,8.7,7.6,15.1,7.9,15.4c0.1,0.1,0.3,0.2,0.4,0.2c0.1,0,0.3-0.1,0.4-0.2c0.3-0.3,7.9-6.7,7.9-15.4C20.3,3.7,16.6,0,12,0z',
               itemStyle: {
-                color: '#ff4c52',
-                shadowBlur: 5,
-                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                color: '#f97316',
+                shadowBlur: 8,
+                shadowColor: 'rgba(249, 115, 22, 0.5)',
               },
               zlevel: 3,
               emphasis: {
                 scale: 1.2,
                 itemStyle: {
-                  color: '#fa6e59',
+                  color: '#fdba74',
                 },
               },
             },
@@ -303,11 +322,28 @@ defineExpose({
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 .map-header {
   padding: 16px 20px;
   border-bottom: 1px solid #f0f2f5;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(250, 250, 252, 1) 100%);
 }
 
 .map-title {

@@ -144,10 +144,19 @@ function updateUSAMap(value?: string) {
   }
 
   const option = {
+    backgroundColor: '#f8f9fa',
     tooltip: {
       trigger: 'item',
       showDelay: 0,
       transitionDuration: 0.2,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#eee',
+      borderWidth: 1,
+      padding: [10, 15],
+      textStyle: {
+        color: '#333',
+        fontSize: 13,
+      },
       formatter(params: any) {
         if (!params.value)
           return `${params.name}: No data yet`
@@ -164,6 +173,9 @@ function updateUSAMap(value?: string) {
       text: ['高', '低'],
       calculable: true,
       show: value !== '0',
+      textStyle: {
+        color: '#666',
+      },
     },
     series: [
       {
@@ -171,18 +183,35 @@ function updateUSAMap(value?: string) {
         type: 'map',
         roam: true,
         map: 'USA',
+        silent: false,
+        zoom: 1.2,
+        itemStyle: {
+          areaColor: '#f0f2f5',
+          borderColor: '#cfd7e7',
+          borderWidth: 0.5,
+          shadowColor: 'rgba(0, 0, 0, 0.1)',
+          shadowBlur: 5,
+        },
         label: {
           show: true,
           fontSize: 8,
+          color: '#555',
         },
         emphasis: {
           label: {
             show: true,
             fontSize: 10,
             fontWeight: 'bold',
+            color: '#333',
           },
           itemStyle: {
-            areaColor: '#e6f7ff',
+            areaColor: '#e1f0ff',
+            borderColor: '#7bb6ff',
+            borderWidth: 1.5,
+            shadowColor: 'rgba(65, 133, 255, 0.3)',
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowOffsetY: 0,
           },
         },
         select: {
@@ -237,9 +266,17 @@ function updateChinaMap(value?: string) {
   }
 
   const option = {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f9fa',
     tooltip: {
       trigger: 'item',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#eee',
+      borderWidth: 1,
+      padding: [10, 15],
+      textStyle: {
+        color: '#333',
+        fontSize: 13,
+      },
       formatter(params: any) {
         if (!params.value && params.value !== 0)
           return `${params.name}: No data yet`
@@ -256,6 +293,9 @@ function updateChinaMap(value?: string) {
       text: ['高', '低'],
       calculable: true,
       show: value !== '0',
+      textStyle: {
+        color: '#666',
+      },
     },
     series: [
       {
@@ -263,18 +303,34 @@ function updateChinaMap(value?: string) {
         type: 'map',
         map: 'China',
         roam: true,
+        zoom: 1.2,
+        itemStyle: {
+          areaColor: '#f0f2f5',
+          borderColor: '#cfd7e7',
+          borderWidth: 0.5,
+          shadowColor: 'rgba(0, 0, 0, 0.1)',
+          shadowBlur: 5,
+        },
         label: {
           show: true,
           fontSize: 8,
+          color: '#555',
         },
         emphasis: {
           label: {
             show: true,
             fontSize: 10,
             fontWeight: 'bold',
+            color: '#333',
           },
           itemStyle: {
-            areaColor: '#e6f7ff',
+            areaColor: '#e1f0ff',
+            borderColor: '#7bb6ff',
+            borderWidth: 1.5,
+            shadowColor: 'rgba(65, 133, 255, 0.3)',
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowOffsetY: 0,
           },
         },
         select: {
@@ -695,11 +751,11 @@ onMounted(() => {
   margin-bottom: 4px;
 
   &.emissions-gradient {
-    background: linear-gradient(to right, #FFC65D, #FF9853, #FF7B52, #FF4C52);
+    background: linear-gradient(to right, #fffbeb, #fef3c7, #fdba74, #f97316, #c2410c);
   }
 
   &.policy-gradient {
-    background: linear-gradient(to right, #b8e994, #78e08f, #38ada9, #079992);
+    background: linear-gradient(to right, #fef9c3, #d9f99d, #86efac, #34d399, #0891b2);
   }
 }
 
@@ -733,16 +789,33 @@ onMounted(() => {
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
 
   &:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+    z-index: 1;
   }
 }
 
 .map-card-header {
   padding: 20px 24px;
   border-bottom: 1px solid #f0f2f5;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(250, 250, 252, 1) 100%);
 }
 
 .map-card-title {
@@ -761,12 +834,16 @@ onMounted(() => {
   padding: 0;
   flex: 1;
   min-height: 400px;
+  position: relative;
+  z-index: 2;
 }
 
 .map-card-footer {
   padding: 12px 24px;
   border-top: 1px solid #f0f2f5;
   background-color: #fafafa;
+  position: relative;
+  z-index: 2;
 }
 
 .map-info {

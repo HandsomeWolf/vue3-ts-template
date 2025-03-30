@@ -485,28 +485,66 @@ onBeforeUnmount(() => {
     top="5vh"
     :fullscreen="windowWidth <= 576"
   >
-    <el-tabs v-model="mapTabsActive" class="map-tabs">
-      <el-tab-pane label="policy comprehensiveness" name="policyComprehensiveness">
+    <!-- 极小屏幕使用下拉菜单替代标签页 -->
+    <div v-if="windowWidth <= 480" class="mobile-tab-selector">
+      <el-select
+        v-model="mapTabsActive"
+        class="mobile-select"
+        placeholder="Select Content"
+        size="large"
+        style="width: 100%"
+      >
+        <el-option label="Policy Comprehensiveness" value="policyComprehensiveness" />
+        <el-option label="Policy Ambition Score" value="policyAmbitionScoreAndCorrespondingRanking" />
+        <el-option label="Emissions Over Time" value="methaneEmissionsOverTime" />
+        <el-option label="Emissions by Sectors" value="methaneEmissionsBySectors" />
+        <el-option label="Policies & Projects" value="policiesAndPilotProjects" />
+        <el-option label="Project Map" value="pilotProjectPositioningMap" />
+      </el-select>
+
+      <div class="mobile-tab-content">
+        <PolicyComprehensiveness v-if="mapTabsActive === 'policyComprehensiveness'" />
+        <PolicyAmbitionScore v-else-if="mapTabsActive === 'policyAmbitionScoreAndCorrespondingRanking'" />
+        <MethaneEmissionsOverTime v-else-if="mapTabsActive === 'methaneEmissionsOverTime'" />
+        <MethaneEmissionsBySectors v-else-if="mapTabsActive === 'methaneEmissionsBySectors'" />
+        <PoliciesAndPilotProjects v-else-if="mapTabsActive === 'policiesAndPilotProjects'" />
+        <PilotProjectMap
+          v-else-if="mapTabsActive === 'pilotProjectPositioningMap'"
+          :region-name="currentSelectedRegion"
+          :country="currentSelectedCountry"
+        />
+      </div>
+    </div>
+
+    <!-- 平板及以上尺寸使用标签页 -->
+    <el-tabs
+      v-else
+      v-model="mapTabsActive"
+      class="map-tabs"
+      :type="windowWidth <= 576 ? 'card' : 'border-card'"
+      :stretch="windowWidth <= 768"
+    >
+      <el-tab-pane label="Policy Comprehensiveness" name="policyComprehensiveness">
         <PolicyComprehensiveness />
       </el-tab-pane>
       <el-tab-pane
-        label="Policy ambition score and corresponding ranking"
+        label="Policy Ambition Score"
         name="policyAmbitionScoreAndCorrespondingRanking"
       >
         <PolicyAmbitionScore />
       </el-tab-pane>
-      <el-tab-pane label="methane emissions over time" name="methaneEmissionsOverTime">
+      <el-tab-pane label="Emissions Over Time" name="methaneEmissionsOverTime">
         <MethaneEmissionsOverTime />
       </el-tab-pane>
-      <el-tab-pane label="methane emissions (by sectors)" name="methaneEmissionsBySectors">
+      <el-tab-pane label="Emissions by Sectors" name="methaneEmissionsBySectors">
         <MethaneEmissionsBySectors />
       </el-tab-pane>
 
-      <el-tab-pane label="policies and pilot projects" name="policiesAndPilotProjects">
+      <el-tab-pane label="Policies & Projects" name="policiesAndPilotProjects">
         <PoliciesAndPilotProjects />
       </el-tab-pane>
 
-      <el-tab-pane label="Pilot Project Positioning Map" name="pilotProjectPositioningMap">
+      <el-tab-pane label="Project Map" name="pilotProjectPositioningMap">
         <PilotProjectMap
           :region-name="currentSelectedRegion"
           :country="currentSelectedCountry"
@@ -630,6 +668,34 @@ onBeforeUnmount(() => {
   }
 }
 
+// 移动端标签选择器
+.mobile-tab-selector {
+  .mobile-select {
+    margin-bottom: 15px;
+
+    :deep(.el-input__wrapper) {
+      box-shadow: 0 0 0 1px #dcdfe6 inset;
+      padding: 0 15px;
+
+      &.is-focus {
+        box-shadow: 0 0 0 1px #409EFF inset;
+      }
+    }
+
+    :deep(.el-select__tags) {
+      max-width: calc(100% - 30px);
+    }
+  }
+
+  .mobile-tab-content {
+    margin-top: 15px;
+    padding: 5px;
+    min-height: 200px;
+    background-color: #fff;
+    border-radius: 4px;
+  }
+}
+
 // 标签页样式
 .map-tabs {
   .el-tabs__header {
@@ -648,17 +714,28 @@ onBeforeUnmount(() => {
   }
 
   @media (max-width: $breakpoint-sm) {
+    .el-tabs__header {
+      margin-bottom: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #fff;
+    }
+
     .el-tabs__item {
       padding: 0 10px;
       font-size: 13px;
-    }
-
-    .el-tabs__header {
-      margin-bottom: 15px;
+      height: 36px;
+      line-height: 36px;
     }
   }
 
   @media (max-width: $breakpoint-xs) {
+    .el-tabs__header {
+      padding: 8px 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
     .el-tabs__nav {
       width: 100%;
       display: flex;
@@ -672,6 +749,38 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      height: 32px;
+      line-height: 32px;
+    }
+
+    .el-tabs__content {
+      padding-top: 10px;
+    }
+
+    :deep(.el-tabs--card) {
+      > .el-tabs__header {
+        .el-tabs__nav {
+          border: none;
+          border-radius: 4px;
+          background-color: #f5f7fa;
+        }
+
+        .el-tabs__item {
+          border: none;
+          margin: 0;
+          transition: all 0.3s ease;
+          border-radius: 4px;
+
+          &.is-active {
+            background-color: #409EFF;
+            color: #fff;
+          }
+
+          &:not(.is-active):hover {
+            color: #409EFF;
+          }
+        }
+      }
     }
   }
 }

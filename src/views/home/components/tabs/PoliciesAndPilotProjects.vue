@@ -253,6 +253,24 @@ onBeforeUnmount(() => {
   .el-form-item {
     margin-bottom: 10px;
     margin-right: 0;
+
+    @media (max-width: $breakpoint-sm) {
+      width: calc(50% - 5px) !important;
+
+      .el-input, .el-select {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: $breakpoint-xs) {
+      width: 100% !important;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .el-button {
+      width: 100%;
+    }
   }
 }
 
@@ -270,6 +288,39 @@ onBeforeUnmount(() => {
 
   .el-button--small {
     padding: 8px 15px;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    // 移动端表格滚动优化
+    .el-scrollbar__wrap {
+      overflow-x: auto;
+    }
+
+    .el-table__body {
+      width: 100% !important;
+    }
+
+    .el-table__fixed-right {
+      height: auto !important;
+    }
+
+    // 固定列样式优化
+    .is-right-fixed {
+      background-color: rgba(255, 255, 255, 0.95);
+      box-shadow: -3px 0 5px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    .cell {
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .el-button--small {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
   }
 }
 

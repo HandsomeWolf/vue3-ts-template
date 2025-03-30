@@ -1,6 +1,6 @@
 <script setup lang='ts'>
-import { InfoFilled } from '@element-plus/icons-vue'
-import { onMounted, ref } from 'vue'
+import { InfoFilled, Menu as MenuIcon } from '@element-plus/icons-vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // 获取路由实例和当前路由
@@ -30,6 +30,18 @@ const navLinks = [
 // 当前活动的导航项，根据当前路由路径初始化
 const activeNavItem = ref('')
 
+// 移动菜单状态
+const isMobileMenuOpen = ref(false)
+const isMobileView = ref(false)
+
+// 检测窗口宽度变化
+function checkMobileView() {
+  isMobileView.value = window.innerWidth < 768
+  if (!isMobileView.value) {
+    isMobileMenuOpen.value = false
+  }
+}
+
 // 在组件挂载时设置当前活动项
 onMounted(() => {
   // 根据当前路径设置活动项
@@ -42,10 +54,25 @@ onMounted(() => {
     // 默认选中第一项
     activeNavItem.value = navLinks[0].name
   }
+
+  // 检测初始窗口大小
+  checkMobileView()
+
+  // 监听窗口大小变化
+  window.addEventListener('resize', checkMobileView)
+})
+
+onBeforeUnmount(() => {
+  // 清除事件监听
+  window.removeEventListener('resize', checkMobileView)
 })
 
 function toggleSectorInfo() {
   showSectorInfo.value = !showSectorInfo.value
+}
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
 // 导航切换函数
@@ -66,23 +93,37 @@ function handleNavigation(path: string, name: string) {
 
   activeNavItem.value = name
   router.push(path)
+
+  // 如果是移动视图，点击后关闭菜单
+  if (isMobileView.value) {
+    isMobileMenuOpen.value = false
+  }
 }
 </script>
 
 <template>
   <el-header>
     <div class="header-container">
-      <div class="header-content">
-        <h1 class="title">
-          Global Methane Monitor
-        </h1>
-        <div class="description">
-          Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
+      <div class="header-top">
+        <div class="header-content">
+          <h1 class="title">
+            Global Methane Monitor
+          </h1>
+          <div class="description">
+            Use the Global Methane Monitor to explore methane policy landscape, pilot mitigation projects, and emission trends in subnational jurisdiction worldwide.
+          </div>
+        </div>
+
+        <!-- 移动端菜单按钮 -->
+        <div v-if="isMobileView" class="mobile-menu-toggle" @click="toggleMobileMenu">
+          <el-icon :size="24">
+            <MenuIcon />
+          </el-icon>
         </div>
       </div>
 
-      <!-- 导航栏 -->
-      <nav class="main-nav">
+      <!-- 导航栏 - 桌面版 -->
+      <nav v-if="!isMobileView" class="main-nav">
         <div
           v-for="link in navLinks"
           :key="link.name"
@@ -94,6 +135,21 @@ function handleNavigation(path: string, name: string) {
           <div class="nav-indicator" />
         </div>
       </nav>
+
+      <!-- 导航栏 - 移动版 -->
+      <nav v-if="isMobileView" class="mobile-nav" :class="{ 'mobile-nav-open': isMobileMenuOpen }">
+        <div
+          v-for="link in navLinks"
+          :key="link.name"
+          class="mobile-nav-item"
+          :class="{ 'mobile-nav-active': activeNavItem === link.name }"
+          @click="handleNavigation(link.path, link.name)"
+        >
+          {{ link.name }}
+        </div>
+      </nav>
+
+      <!-- 部门信息展示 -->
       <div class="sector-info-container">
         <div class="sector-header" @click="toggleSectorInfo">
           <span class="sector-title">Emission Sectors</span>
@@ -122,16 +178,37 @@ function handleNavigation(path: string, name: string) {
   background: linear-gradient(to right, #3a8ee6, #5ca9f5);
   color: white;
 
+  @media (max-width: 768px) {
+    padding: 20px 15px;
+  }
+
   .header-container {
     display: flex;
     flex-direction: column;
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 20px;
+
+    @media (max-width: 768px) {
+      padding: 0 5px;
+    }
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    width: 100%;
   }
 
   .header-content {
     margin-bottom: 25px;
+    max-width: calc(100% - 50px);
+
+    @media (max-width: 768px) {
+      margin-bottom: 15px;
+    }
   }
 
   .title {
@@ -139,6 +216,15 @@ function handleNavigation(path: string, name: string) {
     margin-bottom: 16px;
     font-weight: bold;
     letter-spacing: 0.5px;
+
+    @media (max-width: 768px) {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 20px;
+    }
   }
 
   .description {
@@ -147,6 +233,11 @@ function handleNavigation(path: string, name: string) {
     line-height: 1.5;
     max-width: 800px;
     opacity: 0.9;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+      line-height: 1.4;
+    }
   }
 }
 
@@ -168,12 +259,19 @@ function handleNavigation(path: string, name: string) {
   transform-style: preserve-3d;
   perspective: 800px;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow-x: auto;
+  max-width: 100%;
+
+  /* 隐藏滚动条但保留功能 */
+  &::-webkit-scrollbar {
+    height: 0;
+    width: 0;
+  }
 
   &:hover {
     box-shadow:
       0 6px 28px rgba(0, 0, 0, 0.2),
       inset 0 1px 1px rgba(255, 255, 255, 0.3);
-    // transform: translateY(-2px);
   }
 
   &::before {
@@ -207,6 +305,7 @@ function handleNavigation(path: string, name: string) {
   letter-spacing: 0.3px;
   overflow: hidden;
   backface-visibility: hidden;
+  white-space: nowrap;
 
   &::before {
     content: '';
@@ -273,7 +372,6 @@ function handleNavigation(path: string, name: string) {
       inset 0 2px 3px rgba(255, 255, 255, 0.2);
     letter-spacing: 0.4px;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-    // transform: translateZ(4px);
 
     &::before {
       opacity: 1;
@@ -310,6 +408,69 @@ function handleNavigation(path: string, name: string) {
   }
 }
 
+/* 移动端菜单样式 */
+.mobile-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.mobile-nav {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+
+  &.mobile-nav-open {
+    max-height: 300px;
+  }
+}
+
+.mobile-nav-item {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &.mobile-nav-active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: white;
+      margin-right: 10px;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+  }
+}
+
 :deep(.el-header){
   height: auto;
 }
@@ -343,6 +504,10 @@ function handleNavigation(path: string, name: string) {
     opacity: 0.8;
     font-weight: normal;
     letter-spacing: 0.5px;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 
   .sector-title {
@@ -474,20 +639,5 @@ function handleNavigation(path: string, name: string) {
 
 .pulse-effect {
   animation: pulse 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* 响应式适配 */
-@media (max-width: 768px) {
-  .main-nav {
-    width: 100%;
-    overflow-x: auto;
-    padding: 3px;
-  }
-
-  .nav-item {
-    padding: 10px 15px;
-    white-space: nowrap;
-    font-size: 14px;
-  }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import type * as echarts from 'echarts'
+import { computed, nextTick, onMounted, ref } from 'vue'
 // VChart已全局注册，不需要导入
 
 // 定义组件属性
@@ -10,13 +10,13 @@ const props = defineProps({
     required: true,
     default: () => ({
       years: [],
-      values: []
-    })
+      values: [],
+    }),
   },
   backgroundColor: {
     type: String,
-    default: '#fcdddf'
-  }
+    default: '#fcdddf',
+  },
 })
 
 // 图表实例引用
@@ -29,6 +29,7 @@ const lineChartOption = computed(() => {
     backgroundColor: props.backgroundColor,
     tooltip: {
       trigger: 'axis',
+      confine: true, // 确保tooltip不超出图表区域
       position: 'bottom',
       axisPointer: {
         type: 'line',
@@ -136,12 +137,12 @@ function getChartInstance() {
 
 // 暴露图表实例获取方法给父组件
 defineExpose({
-  getChartInstance
+  getChartInstance,
 })
 </script>
 
 <template>
-  <VChart class="line-chart" :option="lineChartOption" ref="chartRef" autoresize />
+  <VChart ref="chartRef" class="line-chart" :option="lineChartOption" autoresize />
 </template>
 
 <style lang="scss" scoped>
@@ -149,4 +150,4 @@ defineExpose({
   width: 100%;
   height: 260px;
 }
-</style> 
+</style>

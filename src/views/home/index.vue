@@ -155,6 +155,7 @@ function updateUSAMap(value?: string) {
     backgroundColor: '#f8f9fa',
     tooltip: {
       trigger: 'item',
+      confine: true, // 确保tooltip不超出图表区域
       showDelay: 0,
       transitionDuration: 0.2,
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -277,6 +278,7 @@ function updateChinaMap(value?: string) {
     backgroundColor: '#f8f9fa',
     tooltip: {
       trigger: 'item',
+      confine: true, // 确保tooltip不超出图表区域
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
       borderColor: '#eee',
       borderWidth: 1,

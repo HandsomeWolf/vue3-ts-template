@@ -70,9 +70,11 @@ const chartOption = ref({
   // },
   tooltip: {
     trigger: 'axis',
+    confine: true, // 确保tooltip不超出图表区域
   },
   legend: {
     data: ['Industrial', 'Transportation', 'Residential', 'Commercial', 'Energy'],
+    type: 'scroll',
   },
   grid: {
     left: '3%',

@@ -84,7 +84,7 @@ defineExpose({
     v-model="feedbackFormDialogVisible"
     title="Feedback or Request Assistance"
     :width="windowWidth <= 768 ? '95%' : '500'"
-    draggable
+    :draggable="false"
     class="feedback-dialog"
     top="5vh"
     :fullscreen="windowWidth <= 576"

@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
       v-model="projectDetailDialogVisible"
       title="Project Details"
       :width="windowWidth <= 768 ? '95%' : '700'"
-      draggable
+      :draggable="false"
       class="project-detail-dialog"
       top="5vh"
       :fullscreen="windowWidth <= 576"

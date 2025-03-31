@@ -480,7 +480,7 @@ onBeforeUnmount(() => {
     v-model="mapInfoDialogVisible"
     :title="mapInfoDialogTitle"
     :width="windowWidth <= 768 ? '95%' : '1000'"
-    draggable
+    :draggable="false"
     class="region-details-dialog"
     top="5vh"
     :fullscreen="windowWidth <= 576"

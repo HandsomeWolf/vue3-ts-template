@@ -35,8 +35,8 @@ import App from './App.vue'
 import router from './router'
 import { store } from './stores/index'
 // import 'dayjs/locale/zh-cn'
-import './styles/index.scss'
 import 'element-plus/dist/index.css'
+import './styles/index.scss'
 
 // dayjs.locale('zh-cn')
 

@@ -195,6 +195,22 @@ const tableData = ref<TableItem[]>([
   },
 ])
 
+// 窗口宽度监听
+const windowWidth = ref(window.innerWidth)
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
 // 模拟API请求
 function fetchData() {
   // 模拟API延迟
@@ -242,29 +258,37 @@ onMounted(() => {
         <div class="emission-monitoring-container main-container">
           <!-- 筛选栏 -->
           <div class="filter-section">
-            <el-form :inline="true" :model="filterForm" class="filter-form">
-              <el-form-item label="Country" style="width: 200px">
-                <el-select v-model="filterForm.country" placeholder="Select Country" clearable @change="handleFilterChange">
-                  <el-option v-for="item in countryOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="Jurisdiction" style="width: 300px">
-                <el-select v-model="filterForm.jurisdiction" placeholder="Select Jurisdiction" clearable @change="handleFilterChange">
-                  <el-option v-for="item in jurisdictionOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="Emission Sources" style="max-width: 550px;min-width: 340px">
-                <el-select v-model="filterForm.emissionSources" multiple placeholder="Select Emission Sources" @change="handleFilterChange">
-                  <el-option v-for="item in emissionSourcesOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" :icon="Search" @click="handleFilterChange">
-                  Query
-                </el-button>
-                <DownloadDataButton :on-click="downloadData" label="Download data" />
-              </el-form-item>
-            </el-form>
+            <el-row :gutter="20">
+              <el-col :xs="24" :sm="24" :md="24" :lg="18" :xl="18">
+                <el-form :inline="true" :model="filterForm" class="filter-form">
+                  <el-form-item label="" :style="{ width: windowWidth <= 768 ? '100%' : '200px' }">
+                    <el-select v-model="filterForm.country" placeholder="Select Country" clearable @change="handleFilterChange">
+                      <el-option v-for="item in countryOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item label="" :style="{ width: windowWidth <= 768 ? '100%' : '300px' }">
+                    <el-select v-model="filterForm.jurisdiction" placeholder="Select Jurisdiction" clearable @change="handleFilterChange">
+                      <el-option v-for="item in jurisdictionOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item label="" style="max-width: 550px" :style="{ width: windowWidth <= 768 ? '100%' : 'auto', minWidth: windowWidth <= 768 ? '100%' : '340px' }">
+                    <el-select v-model="filterForm.emissionSources" multiple placeholder="Select Emission Sources" @change="handleFilterChange">
+                      <el-option v-for="item in emissionSourcesOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item :style="{ width: windowWidth <= 768 ? '100%' : 'auto' }">
+                    <el-button type="primary" :icon="Search" :style="{ width: windowWidth <= 768 ? '100%' : 'auto' }" @click="handleFilterChange">
+                      Query
+                    </el-button>
+                  </el-form-item>
+                </el-form>
+              </el-col>
+              <el-col :xs="24" :sm="24" :md="24" :lg="6" :xl="6">
+                <div class="chart-actions" :class="{ 'mobile-actions': windowWidth <= 768 }">
+                  <DownloadDataButton :on-click="downloadData" label="Download data" />
+                </div>
+              </el-col>
+            </el-row>
           </div>
 
           <!-- 折线图 -->
@@ -418,6 +442,39 @@ onMounted(() => {
     .el-pagination {
       margin-top: 16px;
       justify-content: flex-end;
+    }
+  }
+}
+
+.chart-actions {
+  margin-bottom: 15px;
+  text-align: right;
+
+  .el-button {
+    margin-left: 10px;
+  }
+
+  &.mobile-actions {
+    text-align: left;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .el-button {
+      margin-left: 0;
+      flex: 1;
+    }
+  }
+
+  @media (max-width: $breakpoint-xs) {
+    &.mobile-actions {
+      flex-direction: column;
+
+      .el-button {
+        width: 100%;
+      }
     }
   }
 }
